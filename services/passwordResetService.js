@@ -1,0 +1,116 @@
+const crypto = require('crypto');
+const { User, PasswordResetToken, UserLogs } = require('../models');
+const emailService = require('./emailService');
+const userService = require('./userService');
+const logger = require('../config/logger');
+
+class PasswordResetService {
+  async forgotPassword(request) {
+    logger.info('PasswordResetService.forgotPassword() invoked');
+    
+    const { emailAddress } = request;
+    
+    // Find user by email
+    const user = await User.findOne({ where: { emailAddress } });
+    if (!user) {
+      throw new Error('User not found with this email address');
+    }
+
+    // Check user role - deny "STAFF" role (if needed)
+    const userRole = await user.getUserRole();
+    // Note: Adjust this logic based on your business requirements
+    // Currently allowing all roles to reset password
+
+    // Generate reset token
+    const token = crypto.randomBytes(32).toString('hex');
+    const expiryDate = new Date();
+    expiryDate.setHours(expiryDate.getHours() + 1); // Token expires in 1 hour
+
+    // Save or update reset token
+    const [resetToken, created] = await PasswordResetToken.findOrCreate({
+      where: { userId: user.id },
+      defaults: {
+        token,
+        expiryDate
+      }
+    });
+
+    if (!created) {
+      await resetToken.update({ token, expiryDate });
+    }
+
+    // Send email with token only
+    const emailSubject = 'Password Reset Request';
+    const emailBody = `
+      Hello ${user.firstName},
+      
+      You requested to reset your password. Please use the token below to reset it:
+      
+      Your Reset Token: ${token}
+      
+      This token will expire in 1 hour.
+      
+      If you didn't request this, please ignore this email.
+    `;
+
+    try {
+      await emailService.sendEmail(emailAddress, emailSubject, emailBody);
+    } catch (error) {
+      logger.error('Error sending password reset email:', error);
+      throw new Error('Failed to send password reset email');
+    }
+
+    return {
+      success: true,
+      message: 'Password reset link sent to your email'
+    };
+  }
+
+  async resetPassword(request) {
+    logger.info('PasswordResetService.resetPassword() invoked');
+    
+    const { token, newPassword } = request;
+    
+    // Find reset token
+    const resetToken = await PasswordResetToken.findOne({
+      where: { token },
+      include: [{ model: User, as: 'user' }]
+    });
+
+    if (!resetToken) {
+      throw new Error('Invalid reset token');
+    }
+
+    // Check if token expired
+    if (new Date() > resetToken.expiryDate) {
+      throw new Error('Reset token has expired');
+    }
+
+    // Update user password
+    await userService.updatePassword(resetToken.userId, newPassword);
+
+    // Delete reset token
+    await resetToken.destroy();
+
+    // Create user log
+    try {
+      await UserLogs.create({
+        userId: resetToken.userId,
+        description: 'Password reset',
+        signOff: false,
+        logIn: new Date(),
+        logOut: null
+      });
+    } catch (error) {
+      logger.error('Error creating user log:', error);
+      // Don't fail the reset if log creation fails
+    }
+
+    return {
+      success: true,
+      message: 'Password reset successfully'
+    };
+  }
+}
+
+module.exports = new PasswordResetService();

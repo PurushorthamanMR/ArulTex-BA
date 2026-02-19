@@ -1,0 +1,3419 @@
+{
+	"info": {
+		"_postman_id": "delta-pos-api-collection",
+		"name": "Delta POS API - Node.js",
+		"description": "Complete API collection for Delta POS Backend (Node.js/Express)",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"auth": {
+		"type": "bearer",
+		"bearer": [
+			{
+				"key": "token",
+				"value": "{{jwt_token}}",
+				"type": "string"
+			}
+		]
+	},
+	"item": [
+		{
+			"name": "Authentication",
+			"item": [
+				{
+					"name": "Register User",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"emailAddress\": \"john.doe@example.com\",\n  \"password\": \"password123\",\n  \"mobileNumber\": \"1234567890\",\n  \"address\": \"123 Main St\",\n  \"userRoleId\": 1,\n  \"branchId\": 1,\n  \"isActive\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/user/register",
+							"host": ["{{base_url}}"],
+							"path": ["user", "register"]
+						}
+					}
+				},
+				{
+					"name": "Login",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"if (pm.response.code === 200) {",
+									"    var jsonData = pm.response.json();",
+									"    if (jsonData.status && jsonData.responseDto && jsonData.responseDto.accessToken) {",
+									"        pm.environment.set(\"jwt_token\", jsonData.responseDto.accessToken);",
+									"    }",
+									"}"
+								]
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"admin@example.com\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/user/login",
+							"host": ["{{base_url}}"],
+							"path": ["user", "login"]
+						}
+					}
+				},
+				{
+					"name": "Forgot Password",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"emailAddress\": \"user@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/forgot-password",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "forgot-password"]
+						}
+					}
+				},
+				{
+					"name": "Reset Password",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"token\": \"reset_token_here\",\n  \"newPassword\": \"newpassword123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/auth/reset-password",
+							"host": ["{{base_url}}"],
+							"path": ["auth", "reset-password"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Get All Users (Paginated)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/user/getAllPage?pageNumber=1&pageSize=10&status=true",
+							"host": ["{{base_url}}"],
+							"path": ["user", "getAllPage"],
+							"query": [
+								{
+									"key": "pageNumber",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								},
+								{
+									"key": "status",
+									"value": "true"
+								},
+								{
+									"key": "firstName",
+									"value": "",
+									"disabled": true
+								},
+								{
+									"key": "lastName",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get User By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/user/getById?id=1",
+							"host": ["{{base_url}}"],
+							"path": ["user", "getById"],
+							"query": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get User By Name",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/user/getByName?firstName=John&lastName=Doe",
+							"host": ["{{base_url}}"],
+							"path": ["user", "getByName"],
+							"query": [
+								{
+									"key": "firstName",
+									"value": "John"
+								},
+								{
+									"key": "lastName",
+									"value": "Doe"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get User By Email",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/user/getByEmailAddress?emailAddress=user@example.com",
+							"host": ["{{base_url}}"],
+							"path": ["user", "getByEmailAddress"],
+							"query": [
+								{
+									"key": "emailAddress",
+									"value": "user@example.com"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get User By Role",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/user/getByRole?userRole=ADMIN",
+							"host": ["{{base_url}}"],
+							"path": ["user", "getByRole"],
+							"query": [
+								{
+									"key": "userRole",
+									"value": "ADMIN"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update User",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": 1,\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"emailAddress\": \"john.doe@example.com\",\n  \"mobileNumber\": \"1234567890\",\n  \"address\": \"123 Main St\",\n  \"userRoleId\": 1,\n  \"branchId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/user/update",
+							"host": ["{{base_url}}"],
+							"path": ["user", "update"]
+						}
+					}
+				},
+				{
+					"name": "Update User Status",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/user/updateStatus?userId=1&status=false",
+							"host": ["{{base_url}}"],
+							"path": ["user", "updateStatus"],
+							"query": [
+								{
+									"key": "userId",
+									"value": "1"
+								},
+								{
+									"key": "status",
+									"value": "false"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Password",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/user/updatePassword?userId=1&password=newpassword123&changedByUserId=1",
+							"host": ["{{base_url}}"],
+							"path": ["user", "updatePassword"],
+							"query": [
+								{
+									"key": "userId",
+									"value": "1"
+								},
+								{
+									"key": "password",
+									"value": "newpassword123"
+								},
+								{
+									"key": "changedByUserId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Products",
+			"item": [
+				{
+					"name": "Save Product",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Product Name\",\n  \"barcode\": \"123456789\",\n  \"pricePerUnit\": 29.99,\n  \"tax\": 1,\n  \"productCategory\": 1,\n  \"quantity\": 100,\n  \"lowStock\": 10,\n  \"purchasePrice\": 20.00,\n  \"discountValidation\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/product/save",
+							"host": ["{{base_url}}"],
+							"path": ["product", "save"]
+						}
+					}
+				},
+				{
+					"name": "Get All Products",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/product/getAll",
+							"host": ["{{base_url}}"],
+							"path": ["product", "getAll"]
+						}
+					}
+				},
+				{
+					"name": "Get All Products (Paginated)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/product/getAllPage?pageNumber=1&pageSize=10&status=true",
+							"host": ["{{base_url}}"],
+							"path": ["product", "getAllPage"],
+							"query": [
+								{
+									"key": "pageNumber",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								},
+								{
+									"key": "status",
+									"value": "true"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Product By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/product/getById?id=1",
+							"host": ["{{base_url}}"],
+							"path": ["product", "getById"],
+							"query": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Product By Barcode",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/product/getByBarcode?barcode=123456789",
+							"host": ["{{base_url}}"],
+							"path": ["product", "getByBarcode"],
+							"query": [
+								{
+									"key": "barcode",
+									"value": "123456789"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Product By Name",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/product/getByName?name=Product Name",
+							"host": ["{{base_url}}"],
+							"path": ["product", "getByName"],
+							"query": [
+								{
+									"key": "name",
+									"value": "Product Name"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Product",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": 1,\n  \"name\": \"Updated Product Name\",\n  \"barcode\": \"123456789\",\n  \"pricePerUnit\": 39.99,\n  \"tax\": 1,\n  \"productCategory\": 1,\n  \"quantity\": 150,\n  \"lowStock\": 15\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/product/update",
+							"host": ["{{base_url}}"],
+							"path": ["product", "update"]
+						}
+					}
+				},
+				{
+					"name": "Update Product Status",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/product/updateStatus?productId=1&status=false",
+							"host": ["{{base_url}}"],
+							"path": ["product", "updateStatus"],
+							"query": [
+								{
+									"key": "productId",
+									"value": "1"
+								},
+								{
+									"key": "status",
+									"value": "false"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Products By Category",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/product/getByProductCategoryName?pageNumber=1&pageSize=10&categoryName=Category&status=true",
+							"host": ["{{base_url}}"],
+							"path": ["product", "getByProductCategoryName"],
+							"query": [
+								{
+									"key": "pageNumber",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								},
+								{
+									"key": "categoryName",
+									"value": "Category"
+								},
+								{
+									"key": "status",
+									"value": "true"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Products By Tax Percentage",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/product/getByTaxPercentage?pageNumber=1&pageSize=10&taxPercentage=10&status=true",
+							"host": ["{{base_url}}"],
+							"path": ["product", "getByTaxPercentage"],
+							"query": [
+								{
+									"key": "pageNumber",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								},
+								{
+									"key": "taxPercentage",
+									"value": "10"
+								},
+								{
+									"key": "status",
+									"value": "true"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Product Categories",
+			"item": [
+				{
+					"name": "Save Product Category",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"productCategoryName\": \"Electronics\",\n  \"agevalidation\": false\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/productCategory/save",
+							"host": ["{{base_url}}"],
+							"path": ["productCategory", "save"]
+						}
+					}
+				},
+				{
+					"name": "Get All Product Categories",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/productCategory/getAll",
+							"host": ["{{base_url}}"],
+							"path": ["productCategory", "getAll"]
+						}
+					}
+				},
+				{
+					"name": "Get All Product Categories (Paginated)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/productCategory/getAllPage?pageNumber=1&pageSize=10&status=true",
+							"host": ["{{base_url}}"],
+							"path": ["productCategory", "getAllPage"],
+							"query": [
+								{
+									"key": "pageNumber",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								},
+								{
+									"key": "status",
+									"value": "true"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Product Category By Name",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/productCategory/getByName?productCategoryName=Electronics",
+							"host": ["{{base_url}}"],
+							"path": ["productCategory", "getByName"],
+							"query": [
+								{
+									"key": "productCategoryName",
+									"value": "Electronics"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Product Category",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": 1,\n  \"productCategoryName\": \"Updated Category\",\n  \"agevalidation\": false\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/productCategory/update",
+							"host": ["{{base_url}}"],
+							"path": ["productCategory", "update"]
+						}
+					}
+				},
+				{
+					"name": "Update Product Category Status",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/productCategory/updateStatus?id=1&status=false",
+							"host": ["{{base_url}}"],
+							"path": ["productCategory", "updateStatus"],
+							"query": [
+								{
+									"key": "id",
+									"value": "1"
+								},
+								{
+									"key": "status",
+									"value": "false"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Transactions",
+			"item": [
+				{
+					"name": "Save Transaction",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"status\": \"Completed\",\n  \"isActive\": 1,\n  \"branchDto\": { \"id\": 1 },\n  \"shopDetailsDto\": { \"id\": 1 },\n  \"customerDto\": { \"id\": 3 },\n  \"userDto\": { \"id\": 2 },\n  \"totalAmount\": 2000.00,\n  \"manualDiscount\": 10.00,\n  \"employeeDiscount\": 10.00,\n  \"transactionDetailsList\": [\n    { \"productDto\": { \"id\": 9 }, \"quantity\": 1, \"unitPrice\": 400.00, \"discount\": 50.00 },\n    { \"productDto\": { \"id\": 13 }, \"quantity\": 1, \"unitPrice\": 400.00, \"discount\": 10.00 },\n    { \"productDto\": { \"id\": 11 }, \"quantity\": 1, \"unitPrice\": 400.00, \"discount\": 50.00 }\n  ],\n  \"transactionPaymentMethod\": [\n    { \"paymentMethodDto\": { \"id\": 2 }, \"amount\": 4000.00, \"isActive\": 1 }\n  ],\n  \"transactionEmployee\": [\n    { \"userDto\": { \"id\": 2 } }\n  ]\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/transaction/save",
+							"host": ["{{base_url}}"],
+							"path": ["transaction", "save"]
+						}
+					}
+				},
+				{
+					"name": "Get All Transactions",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/transaction/getAll",
+							"host": ["{{base_url}}"],
+							"path": ["transaction", "getAll"]
+						}
+					}
+				},
+				{
+					"name": "Get All Transactions (Paginated)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/transaction/getAllPage?pageNumber=1&pageSize=10",
+							"host": ["{{base_url}}"],
+							"path": ["transaction", "getAllPage"],
+							"query": [
+								{
+									"key": "pageNumber",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Transaction By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/transaction/getById?id=1",
+							"host": ["{{base_url}}"],
+							"path": ["transaction", "getById"],
+							"query": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Transactions By Date Range",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/transaction/getByDateRange?startDate=2025-02-01T00:00:00&endDate=2025-02-28T23:59:59",
+							"host": ["{{base_url}}"],
+							"path": ["transaction", "getByDateRange"],
+							"query": [
+								{
+									"key": "startDate",
+									"value": "2025-02-01T00:00:00"
+								},
+								{
+									"key": "endDate",
+									"value": "2025-02-28T23:59:59"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Transactions By Branch",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/transaction/getByBranchId?branchId=1",
+							"host": ["{{base_url}}"],
+							"path": ["transaction", "getByBranchId"],
+							"query": [
+								{
+									"key": "branchId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Transactions By User",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/transaction/getByUserId?userId=1",
+							"host": ["{{base_url}}"],
+							"path": ["transaction", "getByUserId"],
+							"query": [
+								{
+									"key": "userId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Transactions By Customer",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/transaction/getByCustomerId?customerId=1",
+							"host": ["{{base_url}}"],
+							"path": ["transaction", "getByCustomerId"],
+							"query": [
+								{
+									"key": "customerId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get X Report",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/transaction/xReport?userId=1",
+							"host": ["{{base_url}}"],
+							"path": ["transaction", "xReport"],
+							"query": [
+								{
+									"key": "userId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Z Report",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/transaction/zReport?userId=1",
+							"host": ["{{base_url}}"],
+							"path": ["transaction", "zReport"],
+							"query": [
+								{
+									"key": "userId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Cash Total",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/transaction/getCashTotal?userId=1",
+							"host": ["{{base_url}}"],
+							"path": ["transaction", "getCashTotal"],
+							"query": [
+								{
+									"key": "userId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Transaction",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": 1,\n  \"totalAmount\": 150.00,\n  \"status\": \"COMPLETED\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/transaction/update",
+							"host": ["{{base_url}}"],
+							"path": ["transaction", "update"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Customers",
+			"item": [
+				{
+					"name": "Save Customer",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"John Doe\",\n  \"mobileNumber\": \"1234567890\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/customer/save",
+							"host": ["{{base_url}}"],
+							"path": ["customer", "save"]
+						}
+					}
+				},
+				{
+					"name": "Get All Customers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/customer/getAll",
+							"host": ["{{base_url}}"],
+							"path": ["customer", "getAll"]
+						}
+					}
+				},
+				{
+					"name": "Get All Customers (Paginated)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/customer/getAllPage?pageNumber=1&pageSize=10&status=true",
+							"host": ["{{base_url}}"],
+							"path": ["customer", "getAllPage"],
+							"query": [
+								{
+									"key": "pageNumber",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								},
+								{
+									"key": "status",
+									"value": "true"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Customer By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/customer/getById?id=1",
+							"host": ["{{base_url}}"],
+							"path": ["customer", "getById"],
+							"query": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Customer By Name",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/customer/getByName?name=John Doe",
+							"host": ["{{base_url}}"],
+							"path": ["customer", "getByName"],
+							"query": [
+								{
+									"key": "name",
+									"value": "John Doe"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Customer By Mobile Number",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/customer/getByMobileNumber?mobileNumber=1234567890",
+							"host": ["{{base_url}}"],
+							"path": ["customer", "getByMobileNumber"],
+							"query": [
+								{
+									"key": "mobileNumber",
+									"value": "1234567890"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Customer",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": 1,\n  \"name\": \"John Doe Updated\",\n  \"mobileNumber\": \"1234567890\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/customer/update",
+							"host": ["{{base_url}}"],
+							"path": ["customer", "update"]
+						}
+					}
+				},
+				{
+					"name": "Update Customer Status",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/customer/updateStatus?customerId=1&status=false",
+							"host": ["{{base_url}}"],
+							"path": ["customer", "updateStatus"],
+							"query": [
+								{
+									"key": "customerId",
+									"value": "1"
+								},
+								{
+									"key": "status",
+									"value": "false"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Branches",
+			"item": [
+				{
+					"name": "Save Branch",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"branchName\": \"Main Branch\",\n  \"branchCode\": \"MB001\",\n  \"address\": \"123 Main St\",\n  \"contactNumber\": \"1234567890\",\n  \"emailAddress\": \"branch@example.com\",\n  \"countryId\": 1,\n  \"shopDetailsId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/branch/save",
+							"host": ["{{base_url}}"],
+							"path": ["branch", "save"]
+						}
+					}
+				},
+				{
+					"name": "Get All Branches",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/branch/getAll",
+							"host": ["{{base_url}}"],
+							"path": ["branch", "getAll"]
+						}
+					}
+				},
+				{
+					"name": "Get All Branches (Paginated)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/branch/getAllPage?pageNumber=1&pageSize=10&status=true",
+							"host": ["{{base_url}}"],
+							"path": ["branch", "getAllPage"],
+							"query": [
+								{
+									"key": "pageNumber",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								},
+								{
+									"key": "status",
+									"value": "true"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Branch By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/branch/getById?id=1",
+							"host": ["{{base_url}}"],
+							"path": ["branch", "getById"],
+							"query": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Branch By Name",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/branch/getByName?branchName=Main Branch",
+							"host": ["{{base_url}}"],
+							"path": ["branch", "getByName"],
+							"query": [
+								{
+									"key": "branchName",
+									"value": "Main Branch"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Branches By SBU ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/branch/getAllBySBUid?sbuId=1",
+							"host": ["{{base_url}}"],
+							"path": ["branch", "getAllBySBUid"],
+							"query": [
+								{
+									"key": "sbuId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Branch",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": 1,\n  \"branchName\": \"Updated Branch\",\n  \"branchCode\": \"MB001\",\n  \"address\": \"456 New St\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/branch/update",
+							"host": ["{{base_url}}"],
+							"path": ["branch", "update"]
+						}
+					}
+				},
+				{
+					"name": "Update Branch Status",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/branch/updateStatus?branchId=1&status=false",
+							"host": ["{{base_url}}"],
+							"path": ["branch", "updateStatus"],
+							"query": [
+								{
+									"key": "branchId",
+									"value": "1"
+								},
+								{
+									"key": "status",
+									"value": "false"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Tax",
+			"item": [
+				{
+					"name": "Save Tax",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"taxPercentage\": 10.0\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/tax/save",
+							"host": ["{{base_url}}"],
+							"path": ["tax", "save"]
+						}
+					}
+				},
+				{
+					"name": "Get All Taxes",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tax/getAll",
+							"host": ["{{base_url}}"],
+							"path": ["tax", "getAll"]
+						}
+					}
+				},
+				{
+					"name": "Get All Taxes (Paginated)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tax/getAllPage?pageNumber=1&pageSize=10&status=true",
+							"host": ["{{base_url}}"],
+							"path": ["tax", "getAllPage"],
+							"query": [
+								{
+									"key": "pageNumber",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								},
+								{
+									"key": "status",
+									"value": "true"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Tax By Percentage",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tax/getByName?taxPercentage=10",
+							"host": ["{{base_url}}"],
+							"path": ["tax", "getByName"],
+							"query": [
+								{
+									"key": "taxPercentage",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Tax",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": 1,\n  \"taxPercentage\": 15.0\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/tax/update",
+							"host": ["{{base_url}}"],
+							"path": ["tax", "update"]
+						}
+					}
+				},
+				{
+					"name": "Update Tax Status",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/tax/updateStatus?id=1&status=false",
+							"host": ["{{base_url}}"],
+							"path": ["tax", "updateStatus"],
+							"query": [
+								{
+									"key": "id",
+									"value": "1"
+								},
+								{
+									"key": "status",
+									"value": "false"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Suppliers",
+			"item": [
+				{
+					"name": "Save Supplier",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Supplier Name\",\n  \"contactNumber\": \"1234567890\",\n  \"emailAddress\": \"supplier@example.com\",\n  \"address\": \"123 Supplier St\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/supplier/save",
+							"host": ["{{base_url}}"],
+							"path": ["supplier", "save"]
+						}
+					}
+				},
+				{
+					"name": "Get All Suppliers",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/supplier/getAll",
+							"host": ["{{base_url}}"],
+							"path": ["supplier", "getAll"]
+						}
+					}
+				},
+				{
+					"name": "Get All Suppliers (Paginated)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/supplier/getAllPage?pageNumber=1&pageSize=10&status=true",
+							"host": ["{{base_url}}"],
+							"path": ["supplier", "getAllPage"],
+							"query": [
+								{
+									"key": "pageNumber",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								},
+								{
+									"key": "status",
+									"value": "true"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Supplier By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/supplier/getById?id=1",
+							"host": ["{{base_url}}"],
+							"path": ["supplier", "getById"],
+							"query": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Supplier By Name",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/supplier/getByName?name=Supplier Name",
+							"host": ["{{base_url}}"],
+							"path": ["supplier", "getByName"],
+							"query": [
+								{
+									"key": "name",
+									"value": "Supplier Name"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Supplier",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": 1,\n  \"name\": \"Updated Supplier\",\n  \"contactNumber\": \"9876543210\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/supplier/update",
+							"host": ["{{base_url}}"],
+							"path": ["supplier", "update"]
+						}
+					}
+				},
+				{
+					"name": "Update Supplier Status",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/supplier/updateStatus?supplierId=1&status=false",
+							"host": ["{{base_url}}"],
+							"path": ["supplier", "updateStatus"],
+							"query": [
+								{
+									"key": "supplierId",
+									"value": "1"
+								},
+								{
+									"key": "status",
+									"value": "false"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Stock",
+			"item": [
+				{
+					"name": "Save Stock",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"quantity\": 100,\n  \"productId\": 1,\n  \"supplierId\": 1,\n  \"branchId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/stock/save",
+							"host": ["{{base_url}}"],
+							"path": ["stock", "save"]
+						}
+					}
+				},
+				{
+					"name": "Get All Stock",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/stock/getAll",
+							"host": ["{{base_url}}"],
+							"path": ["stock", "getAll"]
+						}
+					}
+				},
+				{
+					"name": "Get All Stock (Paginated)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/stock/getAllPage?pageNumber=1&pageSize=10&status=true",
+							"host": ["{{base_url}}"],
+							"path": ["stock", "getAllPage"],
+							"query": [
+								{
+									"key": "pageNumber",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								},
+								{
+									"key": "status",
+									"value": "true"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Stock By ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/stock/getById?id=1",
+							"host": ["{{base_url}}"],
+							"path": ["stock", "getById"],
+							"query": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Stock By Product ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/stock/getByProductId?productId=1",
+							"host": ["{{base_url}}"],
+							"path": ["stock", "getByProductId"],
+							"query": [
+								{
+									"key": "productId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Stock By Product Category ID",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/stock/getByProductCategoryId?productCategoryId=1",
+							"host": ["{{base_url}}"],
+							"path": ["stock", "getByProductCategoryId"],
+							"query": [
+								{
+									"key": "productCategoryId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Stock By Quantity Range",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/stock/getByQuantityRange?minQuantity=10&maxQuantity=100",
+							"host": ["{{base_url}}"],
+							"path": ["stock", "getByQuantityRange"],
+							"query": [
+								{
+									"key": "minQuantity",
+									"value": "10"
+								},
+								{
+									"key": "maxQuantity",
+									"value": "100"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Stock",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": 1,\n  \"quantity\": 150,\n  \"productId\": 1,\n  \"supplierId\": 1,\n  \"branchId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/stock/update",
+							"host": ["{{base_url}}"],
+							"path": ["stock", "update"]
+						}
+					}
+				},
+				{
+					"name": "Update Stock Status",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/stock/updateStatus?stockId=1&status=false",
+							"host": ["{{base_url}}"],
+							"path": ["stock", "updateStatus"],
+							"query": [
+								{
+									"key": "stockId",
+									"value": "1"
+								},
+								{
+									"key": "status",
+									"value": "false"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Payment Methods",
+			"item": [
+				{
+					"name": "Save Payment Method",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"CASH\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/paymentMethod/save",
+							"host": ["{{base_url}}"],
+							"path": ["paymentMethod", "save"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "User Roles",
+			"item": [
+				{
+					"name": "Save User Role",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userRole\": \"MANAGER\",\n  \"isActive\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/userRole/save",
+							"host": ["{{base_url}}"],
+							"path": ["userRole", "save"]
+						}
+					}
+				},
+				{
+					"name": "Get All User Roles",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/userRole/getAll",
+							"host": ["{{base_url}}"],
+							"path": ["userRole", "getAll"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Shop Details",
+			"item": [
+				{
+					"name": "Save Shop Details",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Main Shop\",\n  \"address\": \"123 Main St\",\n  \"contactNumber\": \"1234567890\",\n  \"whatsappNumber\": \"1234567890\",\n  \"email\": \"shop@example.com\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/shopDetails/save",
+							"host": ["{{base_url}}"],
+							"path": ["shopDetails", "save"]
+						}
+					}
+				},
+				{
+					"name": "Get All Shop Details",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/shopDetails/getAll",
+							"host": ["{{base_url}}"],
+							"path": ["shopDetails", "getAll"]
+						}
+					}
+				},
+				{
+					"name": "Get All Shop Details (Paginated)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/shopDetails/getAllPage?pageNumber=1&pageSize=10&status=true",
+							"host": ["{{base_url}}"],
+							"path": ["shopDetails", "getAllPage"],
+							"query": [
+								{
+									"key": "pageNumber",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								},
+								{
+									"key": "status",
+									"value": "true"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Shop Details By Name",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/shopDetails/getByName?name=Main Shop",
+							"host": ["{{base_url}}"],
+							"path": ["shopDetails", "getByName"],
+							"query": [
+								{
+									"key": "name",
+									"value": "Main Shop"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Banking",
+			"item": [
+				{
+					"name": "Save Banking",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"amount\": 1000.00,\n  \"branchId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/banking/save",
+							"host": ["{{base_url}}"],
+							"path": ["banking", "save"]
+						}
+					}
+				},
+				{
+					"name": "Get All Banking (Paginated)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/banking/getAllPage?pageNumber=1&pageSize=10",
+							"host": ["{{base_url}}"],
+							"path": ["banking", "getAllPage"],
+							"query": [
+								{
+									"key": "pageNumber",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Total Banking",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/banking/getTotalBanking",
+							"host": ["{{base_url}}"],
+							"path": ["banking", "getTotalBanking"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Sales Reports",
+			"item": [
+				{
+					"name": "Save Sales Report",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"date\": \"2025-02-19\",\n  \"totalSales\": 5000.00,\n  \"branchId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/salesReport/save",
+							"host": ["{{base_url}}"],
+							"path": ["salesReport", "save"]
+						}
+					}
+				},
+				{
+					"name": "Get All X Reports",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/salesReport/getAllByXReports",
+							"host": ["{{base_url}}"],
+							"path": ["salesReport", "getAllByXReports"]
+						}
+					}
+				},
+				{
+					"name": "Get All Z Reports",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/salesReport/getAllByZReports",
+							"host": ["{{base_url}}"],
+							"path": ["salesReport", "getAllByZReports"]
+						}
+					}
+				},
+				{
+					"name": "Get Z Reports (Paginated)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/salesReport/getAllByZReportsPage?pageNumber=1&pageSize=10",
+							"host": ["{{base_url}}"],
+							"path": ["salesReport", "getAllByZReportsPage"],
+							"query": [
+								{
+									"key": "pageNumber",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Total Count",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/salesReport/getTotalCount?reportType=X",
+							"host": ["{{base_url}}"],
+							"path": ["salesReport", "getTotalCount"],
+							"query": [
+								{
+									"key": "reportType",
+									"value": "X"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Device Auth",
+			"item": [
+				{
+					"name": "Register Device",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"tillName\": \"Till 1\",\n  \"tillId\": \"TILL001\",\n  \"password\": \"password123\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/deviceAuth/register",
+							"host": ["{{base_url}}"],
+							"path": ["deviceAuth", "register"]
+						}
+					}
+				},
+				{
+					"name": "Login Device",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/deviceAuth/login?tillId=TILL001",
+							"host": ["{{base_url}}"],
+							"path": ["deviceAuth", "login"],
+							"query": [
+								{
+									"key": "tillId",
+									"value": "TILL001"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get By Till Name",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/deviceAuth/getByTillName?tillName=Till 1",
+							"host": ["{{base_url}}"],
+							"path": ["deviceAuth", "getByTillName"],
+							"query": [
+								{
+									"key": "tillName",
+									"value": "Till 1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get By Till ID",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/deviceAuth/getByTillId?tillId=TILL001",
+							"host": ["{{base_url}}"],
+							"path": ["deviceAuth", "getByTillId"],
+							"query": [
+								{
+									"key": "tillId",
+									"value": "TILL001"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get All Pending",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/deviceAuth/getAllPending",
+							"host": ["{{base_url}}"],
+							"path": ["deviceAuth", "getAllPending"]
+						}
+					}
+				},
+				{
+					"name": "Get All Devices",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/deviceAuth/getAll",
+							"host": ["{{base_url}}"],
+							"path": ["deviceAuth", "getAll"]
+						}
+					}
+				},
+				{
+					"name": "Approve Device",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/deviceAuth/approve?id=1",
+							"host": ["{{base_url}}"],
+							"path": ["deviceAuth", "approve"],
+							"query": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Decline Device",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/deviceAuth/decline?id=1",
+							"host": ["{{base_url}}"],
+							"path": ["deviceAuth", "decline"],
+							"query": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Block Device",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/deviceAuth/block?id=1",
+							"host": ["{{base_url}}"],
+							"path": ["deviceAuth", "block"],
+							"query": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Till Name",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/deviceAuth/updateTillName?id=1&tillName=Updated Till",
+							"host": ["{{base_url}}"],
+							"path": ["deviceAuth", "updateTillName"],
+							"query": [
+								{
+									"key": "id",
+									"value": "1"
+								},
+								{
+									"key": "tillName",
+									"value": "Updated Till"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Manager Toggle",
+			"item": [
+				{
+					"name": "Get All Manager Toggles",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/managerToggle/getAll",
+							"host": ["{{base_url}}"],
+							"path": ["managerToggle", "getAll"]
+						}
+					}
+				},
+				{
+					"name": "Get By Name",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/managerToggle/getByName?action=some_action",
+							"host": ["{{base_url}}"],
+							"path": ["managerToggle", "getByName"],
+							"query": [
+								{
+									"key": "action",
+									"value": "some_action"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Save Manager Toggle",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"name\": \"Toggle Name\",\n  \"isActive\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/managerToggle/save",
+							"host": ["{{base_url}}"],
+							"path": ["managerToggle", "save"]
+						}
+					}
+				},
+				{
+					"name": "Update Manager Toggle",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": 1,\n  \"name\": \"Updated Toggle\",\n  \"isActive\": false\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/managerToggle/update",
+							"host": ["{{base_url}}"],
+							"path": ["managerToggle", "update"]
+						}
+					}
+				},
+				{
+					"name": "Update Status",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/managerToggle/updateStatus?id=1&status=false",
+							"host": ["{{base_url}}"],
+							"path": ["managerToggle", "updateStatus"],
+							"query": [
+								{
+									"key": "id",
+									"value": "1"
+								},
+								{
+									"key": "status",
+									"value": "false"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Update Admin Status",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/managerToggle/updateAdminStatus?id=1&status=false",
+							"host": ["{{base_url}}"],
+							"path": ["managerToggle", "updateAdminStatus"],
+							"query": [
+								{
+									"key": "id",
+									"value": "1"
+								},
+								{
+									"key": "status",
+									"value": "false"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "AI Sales",
+			"item": [
+				{
+					"name": "Predict Sales",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"inputData\": \"sales prediction data\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/aiSales/predict",
+							"host": ["{{base_url}}"],
+							"path": ["aiSales", "predict"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Country",
+			"item": [
+				{
+					"name": "Save Country",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"countryName\": \"United States\"\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/country/save",
+							"host": ["{{base_url}}"],
+							"path": ["country", "save"]
+						}
+					}
+				},
+				{
+					"name": "Get All Countries",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/country/getAll",
+							"host": ["{{base_url}}"],
+							"path": ["country", "getAll"]
+						}
+					}
+				},
+				{
+					"name": "Get All Countries (Paginated)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/country/getAllPage?pageNumber=1&pageSize=10",
+							"host": ["{{base_url}}"],
+							"path": ["country", "getAllPage"],
+							"query": [
+								{
+									"key": "pageNumber",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Employee Discount",
+			"item": [
+				{
+					"name": "Save Employee Discount",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"discountPercentage\": 10.0,\n  \"userId\": 1,\n  \"productId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/employeeDiscount/save",
+							"host": ["{{base_url}}"],
+							"path": ["employeeDiscount", "save"]
+						}
+					}
+				},
+				{
+					"name": "Update Employee Discount",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": 1,\n  \"discountPercentage\": 15.0,\n  \"userId\": 1,\n  \"productId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/employeeDiscount/update",
+							"host": ["{{base_url}}"],
+							"path": ["employeeDiscount", "update"]
+						}
+					}
+				},
+				{
+					"name": "Get All Employee Discounts",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/employeeDiscount/getAll",
+							"host": ["{{base_url}}"],
+							"path": ["employeeDiscount", "getAll"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Minimam Banking",
+			"item": [
+				{
+					"name": "Save Minimam Banking",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"amount\": 500.00,\n  \"branchId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/minimamBanking/save",
+							"host": ["{{base_url}}"],
+							"path": ["minimamBanking", "save"]
+						}
+					}
+				},
+				{
+					"name": "Update Minimam Banking",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": 1,\n  \"amount\": 600.00,\n  \"branchId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/minimamBanking/update",
+							"host": ["{{base_url}}"],
+							"path": ["minimamBanking", "update"]
+						}
+					}
+				},
+				{
+					"name": "Get All Minimam Banking",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/minimamBanking/getAll",
+							"host": ["{{base_url}}"],
+							"path": ["minimamBanking", "getAll"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Payout",
+			"item": [
+				{
+					"name": "Get All Payouts",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/payout/getAll",
+							"host": ["{{base_url}}"],
+							"path": ["payout", "getAll"]
+						}
+					}
+				},
+				{
+					"name": "Get All Payouts (Paginated)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/payout/getAllPage?pageNumber=1&pageSize=10",
+							"host": ["{{base_url}}"],
+							"path": ["payout", "getAllPage"],
+							"query": [
+								{
+									"key": "pageNumber",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Save Payout",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"amount\": 1000.00,\n  \"description\": \"Monthly payout\",\n  \"payoutCategoryId\": 1,\n  \"branchId\": 1,\n  \"userId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/payout/save",
+							"host": ["{{base_url}}"],
+							"path": ["payout", "save"]
+						}
+					}
+				},
+				{
+					"name": "Update Payout",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": 1,\n  \"amount\": 1200.00,\n  \"description\": \"Updated payout\",\n  \"payoutCategoryId\": 1,\n  \"branchId\": 1,\n  \"userId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/payout/update",
+							"host": ["{{base_url}}"],
+							"path": ["payout", "update"]
+						}
+					}
+				},
+				{
+					"name": "Update Payout Status",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/payout/updateStatus?id=1&status=false",
+							"host": ["{{base_url}}"],
+							"path": ["payout", "updateStatus"],
+							"query": [
+								{
+									"key": "id",
+									"value": "1"
+								},
+								{
+									"key": "status",
+									"value": "false"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Total Payout",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/payout/getTotalPayout",
+							"host": ["{{base_url}}"],
+							"path": ["payout", "getTotalPayout"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Payout Category",
+			"item": [
+				{
+					"name": "Save Payout Category",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"categoryName\": \"Salary\",\n  \"isActive\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/payoutCategory/save",
+							"host": ["{{base_url}}"],
+							"path": ["payoutCategory", "save"]
+						}
+					}
+				},
+				{
+					"name": "Update Payout Category",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": 1,\n  \"categoryName\": \"Updated Category\",\n  \"isActive\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/payoutCategory/update",
+							"host": ["{{base_url}}"],
+							"path": ["payoutCategory", "update"]
+						}
+					}
+				},
+				{
+					"name": "Update Payout Category Status",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/payoutCategory/updateStatus?id=1&status=false",
+							"host": ["{{base_url}}"],
+							"path": ["payoutCategory", "updateStatus"],
+							"query": [
+								{
+									"key": "id",
+									"value": "1"
+								},
+								{
+									"key": "status",
+									"value": "false"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get All Payout Categories",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/payoutCategory/getAll",
+							"host": ["{{base_url}}"],
+							"path": ["payoutCategory", "getAll"]
+						}
+					}
+				},
+				{
+					"name": "Get All Payout Categories (Paginated)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/payoutCategory/getAllPage?pageNumber=1&pageSize=10&status=true",
+							"host": ["{{base_url}}"],
+							"path": ["payoutCategory", "getAllPage"],
+							"query": [
+								{
+									"key": "pageNumber",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								},
+								{
+									"key": "status",
+									"value": "true"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Payout Category By Name",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/payoutCategory/getByName?payoutCategory=Salary",
+							"host": ["{{base_url}}"],
+							"path": ["payoutCategory", "getByName"],
+							"query": [
+								{
+									"key": "payoutCategory",
+									"value": "Salary"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Product Discount",
+			"item": [
+				{
+					"name": "Save Product Discount",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"discountValue\": 10.0,\n  \"productId\": 1,\n  \"productDiscountTypeId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/productDiscount/save",
+							"host": ["{{base_url}}"],
+							"path": ["productDiscount", "save"]
+						}
+					}
+				},
+				{
+					"name": "Update Product Discount",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": 1,\n  \"discountValue\": 15.0,\n  \"productId\": 1,\n  \"productDiscountTypeId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/productDiscount/update",
+							"host": ["{{base_url}}"],
+							"path": ["productDiscount", "update"]
+						}
+					}
+				},
+				{
+					"name": "Update Product Discount Status",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/productDiscount/updateStatus?id=1&status=false",
+							"host": ["{{base_url}}"],
+							"path": ["productDiscount", "updateStatus"],
+							"query": [
+								{
+									"key": "id",
+									"value": "1"
+								},
+								{
+									"key": "status",
+									"value": "false"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get All Product Discounts (Paginated)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/productDiscount/getAllPage?pageNumber=1&pageSize=10&status=true",
+							"host": ["{{base_url}}"],
+							"path": ["productDiscount", "getAllPage"],
+							"query": [
+								{
+									"key": "pageNumber",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								},
+								{
+									"key": "status",
+									"value": "true"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Product Discount Type",
+			"item": [
+				{
+					"name": "Save Product Discount Type",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"type\": \"PERCENTAGE\",\n  \"isActive\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/productDiscountType/save",
+							"host": ["{{base_url}}"],
+							"path": ["productDiscountType", "save"]
+						}
+					}
+				},
+				{
+					"name": "Update Product Discount Type",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": 1,\n  \"type\": \"FIXED\",\n  \"isActive\": true\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/productDiscountType/update",
+							"host": ["{{base_url}}"],
+							"path": ["productDiscountType", "update"]
+						}
+					}
+				},
+				{
+					"name": "Update Product Discount Type Status",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/productDiscountType/updateStatus?id=1&status=false",
+							"host": ["{{base_url}}"],
+							"path": ["productDiscountType", "updateStatus"],
+							"query": [
+								{
+									"key": "id",
+									"value": "1"
+								},
+								{
+									"key": "status",
+									"value": "false"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get All Product Discount Types",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/productDiscountType/getAll",
+							"host": ["{{base_url}}"],
+							"path": ["productDiscountType", "getAll"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Purchase List",
+			"item": [
+				{
+					"name": "Save Purchase List",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/purchaseList/save?barcode=123456789",
+							"host": ["{{base_url}}"],
+							"path": ["purchaseList", "save"],
+							"query": [
+								{
+									"key": "barcode",
+									"value": "123456789"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get All Purchase Lists",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/purchaseList/getAll",
+							"host": ["{{base_url}}"],
+							"path": ["purchaseList", "getAll"]
+						}
+					}
+				},
+				{
+					"name": "Get All Purchase Lists (Paginated)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/purchaseList/getAllPage?pageNumber=1&pageSize=10",
+							"host": ["{{base_url}}"],
+							"path": ["purchaseList", "getAllPage"],
+							"query": [
+								{
+									"key": "pageNumber",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Delete All Purchase Lists",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/purchaseList/deleteAll",
+							"host": ["{{base_url}}"],
+							"path": ["purchaseList", "deleteAll"]
+						}
+					}
+				},
+				{
+					"name": "Delete Purchase List By ID",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/purchaseList/deleteById?id=1",
+							"host": ["{{base_url}}"],
+							"path": ["purchaseList", "deleteById"],
+							"query": [
+								{
+									"key": "id",
+									"value": "1"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Shifts",
+			"item": [
+				{
+					"name": "Save Shift",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"startTime\": \"2025-02-19T09:00:00\",\n  \"endTime\": \"2025-02-19T17:00:00\",\n  \"userId\": 1,\n  \"branchId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/shifts/save",
+							"host": ["{{base_url}}"],
+							"path": ["shifts", "save"]
+						}
+					}
+				},
+				{
+					"name": "Update Shift",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": 1,\n  \"startTime\": \"2025-02-19T10:00:00\",\n  \"endTime\": \"2025-02-19T18:00:00\",\n  \"userId\": 1,\n  \"branchId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/shifts/update",
+							"host": ["{{base_url}}"],
+							"path": ["shifts", "update"]
+						}
+					}
+				},
+				{
+					"name": "Update Shift Status",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/shifts/updateStatus?shiftId=1&status=false",
+							"host": ["{{base_url}}"],
+							"path": ["shifts", "updateStatus"],
+							"query": [
+								{
+									"key": "shiftId",
+									"value": "1"
+								},
+								{
+									"key": "status",
+									"value": "false"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get All Shifts (Paginated)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/shifts/getAllPage?pageNumber=1&pageSize=10&status=true",
+							"host": ["{{base_url}}"],
+							"path": ["shifts", "getAllPage"],
+							"query": [
+								{
+									"key": "pageNumber",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								},
+								{
+									"key": "status",
+									"value": "true"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Shifts By Date Range",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/shifts/getAllByDateRange?startDate=2025-02-01&endDate=2025-02-28",
+							"host": ["{{base_url}}"],
+							"path": ["shifts", "getAllByDateRange"],
+							"query": [
+								{
+									"key": "startDate",
+									"value": "2025-02-01"
+								},
+								{
+									"key": "endDate",
+									"value": "2025-02-28"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Staff Leave",
+			"item": [
+				{
+					"name": "Save Staff Leave",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"startDate\": \"2025-02-20T00:00:00\",\n  \"endDate\": \"2025-02-22T00:00:00\",\n  \"reason\": \"Personal leave\",\n  \"userId\": 1,\n  \"branchId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/staffLeave/save",
+							"host": ["{{base_url}}"],
+							"path": ["staffLeave", "save"]
+						}
+					}
+				},
+				{
+					"name": "Update Staff Leave",
+					"request": {
+						"method": "PUT",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"id\": 1,\n  \"startDate\": \"2025-02-21T00:00:00\",\n  \"endDate\": \"2025-02-23T00:00:00\",\n  \"reason\": \"Updated reason\",\n  \"userId\": 1,\n  \"branchId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/staffLeave/update",
+							"host": ["{{base_url}}"],
+							"path": ["staffLeave", "update"]
+						}
+					}
+				},
+				{
+					"name": "Update Staff Leave Status",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/staffLeave/updateStatus?id=1&status=false",
+							"host": ["{{base_url}}"],
+							"path": ["staffLeave", "updateStatus"],
+							"query": [
+								{
+									"key": "id",
+									"value": "1"
+								},
+								{
+									"key": "status",
+									"value": "false"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get All Staff Leaves",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/staffLeave/getAll",
+							"host": ["{{base_url}}"],
+							"path": ["staffLeave", "getAll"]
+						}
+					}
+				},
+				{
+					"name": "Get All Staff Leaves (Paginated)",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/staffLeave/getAllPage?pageNumber=1&pageSize=10&status=true",
+							"host": ["{{base_url}}"],
+							"path": ["staffLeave", "getAllPage"],
+							"query": [
+								{
+									"key": "pageNumber",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								},
+								{
+									"key": "status",
+									"value": "true"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Send Email",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/staffLeave/sendEmail?to=user@example.com&subject=Leave Request&body=Your leave has been approved",
+							"host": ["{{base_url}}"],
+							"path": ["staffLeave", "sendEmail"],
+							"query": [
+								{
+									"key": "to",
+									"value": "user@example.com"
+								},
+								{
+									"key": "subject",
+									"value": "Leave Request"
+								},
+								{
+									"key": "body",
+									"value": "Your leave has been approved"
+								}
+							]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "User Logs",
+			"item": [
+				{
+					"name": "Save User Log",
+					"request": {
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"action\": \"LOGIN\",\n  \"userId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/userLogs/save",
+							"host": ["{{base_url}}"],
+							"path": ["userLogs", "save"]
+						}
+					}
+				},
+				{
+					"name": "Get All User Logs",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/userLogs/getAll",
+							"host": ["{{base_url}}"],
+							"path": ["userLogs", "getAll"]
+						}
+					}
+				}
+			]
+		},
+		{
+			"name": "Void History",
+			"item": [
+				{
+					"name": "Save Void History",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [
+							{
+								"key": "Content-Type",
+								"value": "application/json"
+							}
+						],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"reason\": \"Customer cancellation\",\n  \"transactionId\": 1,\n  \"userId\": 1\n}"
+						},
+						"url": {
+							"raw": "{{base_url}}/voidHistory/save",
+							"host": ["{{base_url}}"],
+							"path": ["voidHistory", "save"]
+						}
+					}
+				},
+				{
+					"name": "Get All Void History",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/voidHistory/getAll",
+							"host": ["{{base_url}}"],
+							"path": ["voidHistory", "getAll"]
+						}
+					}
+				},
+				{
+					"name": "Get All Void History (Paginated)",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/voidHistory/getAllPage?pageNumber=1&pageSize=10",
+							"host": ["{{base_url}}"],
+							"path": ["voidHistory", "getAllPage"],
+							"query": [
+								{
+									"key": "pageNumber",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Void History By Date",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/voidHistory/getAllPageByDate?pageNumber=1&pageSize=10&date=2025-02-19",
+							"host": ["{{base_url}}"],
+							"path": ["voidHistory", "getAllPageByDate"],
+							"query": [
+								{
+									"key": "pageNumber",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								},
+								{
+									"key": "date",
+									"value": "2025-02-19"
+								}
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Void History By User ID",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{base_url}}/voidHistory/getAllPageByUserId?pageNumber=1&pageSize=10&userId=1",
+							"host": ["{{base_url}}"],
+							"path": ["voidHistory", "getAllPageByUserId"],
+							"query": [
+								{
+									"key": "pageNumber",
+									"value": "1"
+								},
+								{
+									"key": "pageSize",
+									"value": "10"
+								},
+								{
+									"key": "userId",
+									"value": "1"
+								}
+							]
+						}
+					}
+				}
+			]
+		}
+	],
+	"variable": [
+		{
+			"key": "base_url",
+			"value": "http://localhost:8080",
+			"type": "string"
+		},
+		{
+			"key": "jwt_token",
+			"value": "",
+			"type": "string"
+		}
+	]
+}
