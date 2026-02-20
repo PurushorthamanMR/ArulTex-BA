@@ -1,8 +1,8 @@
 {
 	"info": {
-		"_postman_id": "delta-pos-api-collection",
-		"name": "Delta POS API - Node.js",
-		"description": "API collection for Delta POS Backend (Node.js/Express). Updated to match current routes: user, product, transaction, customer, productCategory, tax, supplier, stock, paymentMethod, userRole, auth, userLogs. No branch/shop/banking/payout/etc.",
+		"_postman_id": "arultex-pos-api-collection",
+		"name": "ArulTex POS API - Node.js",
+		"description": "API collection for ArulTex POS Backend (Node.js/Express). Updated to match current routes: user, product, transaction, customer, productCategory, tax, supplier, stock, paymentMethod, userRole, auth, userLogs. No branch/shop/banking/payout/etc.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"auth": {

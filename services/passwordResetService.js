@@ -92,6 +92,27 @@ class PasswordResetService {
     // Delete reset token
     await resetToken.destroy();
 
+    // Send success confirmation email to user
+    const user = resetToken.user || await User.findByPk(resetToken.userId);
+    if (user && user.emailAddress) {
+      try {
+        const emailSubject = 'Password Reset Successful';
+        const emailBody = `
+Hello ${user.firstName},
+
+Your password has been reset successfully.
+
+If you did not make this change, please contact support immediately.
+
+- Yarltech AruntexPOS
+        `.trim();
+        await emailService.sendEmail(user.emailAddress, emailSubject, emailBody);
+      } catch (error) {
+        logger.error('Error sending password reset success email:', error);
+        // Don't fail the reset if email fails
+      }
+    }
+
     // Create user log
     try {
       await UserLogs.create({

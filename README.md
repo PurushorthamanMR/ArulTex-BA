@@ -1,11 +1,11 @@
-# Delta POS Backend - Node.js Version
+# ArulTex POS Backend - Node.js Version
 
 Node.js/Express.js conversion of the Spring Boot POS (Point of Sale) system. Uses the same MySQL schema and provides a REST API with JWT authentication and role-based access.
 
 ## Project Structure
 
 ```
-delta_pos_be_nodejs/
+arultex_pos_be_nodejs/
 ├── config/
 │   ├── database.js      # Sequelize database configuration
 │   └── logger.js        # Winston logger configuration

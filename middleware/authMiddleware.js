@@ -30,14 +30,11 @@ const authenticateToken = async (req, res, next) => {
       );
     }
 
-    // Load user details
-    const { UserRole, Branch } = require('../models');
+    // Load user details (UserRole only; Branch not in use in this app)
+    const { UserRole } = require('../models');
     const user = await User.findOne({ 
       where: { emailAddress: username, isActive: true },
-      include: [
-        { model: UserRole, as: 'userRole' },
-        { model: Branch, as: 'branch' }
-      ]
+      include: [{ model: UserRole, as: 'userRole' }]
     });
 
     if (!user) {
@@ -60,8 +57,13 @@ const authenticateToken = async (req, res, next) => {
         responseUtil.getErrorServiceResponse('JWT token expired', 401)
       );
     }
+    if (error.name === 'JsonWebTokenError') {
+      return res.status(401).json(
+        responseUtil.getErrorServiceResponse('JWT token is invalid (signature or format)', 401)
+      );
+    }
     return res.status(401).json(
-      responseUtil.getErrorServiceResponse('JWT token is invalid', 401)
+      responseUtil.getErrorServiceResponse(error.message || 'JWT token is invalid', 401)
     );
   }
 };

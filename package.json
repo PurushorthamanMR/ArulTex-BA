@@ -1,5 +1,5 @@
 {
-  "name": "delta_pos_be_nodejs",
+  "name": "arultex_pos_be_nodejs",
   "version": "1.0.0",
   "description": "POS Main API project for Node.js",
   "main": "server.js",
