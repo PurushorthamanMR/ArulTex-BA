@@ -1,8 +1,6 @@
 const { Op } = require('sequelize');
-const { Transaction, TransactionDetailsList, TransactionPaymentMethod, TransactionEmployee, Product, ProductCategory, User, Customer, PaymentMethod, Branch, ShopDetails } = require('../models');
+const { Transaction, TransactionDetailsList, TransactionPaymentMethod, Product, ProductCategory, User, Customer, PaymentMethod } = require('../models');
 const productService = require('./productService');
-const bankingService = require('./bankingService');
-const payoutService = require('./payoutService');
 const logger = require('../config/logger');
 
 class TransactionService {
@@ -29,34 +27,6 @@ class TransactionService {
       include: [
         { model: User, as: 'user' },
         { model: Customer, as: 'customer' },
-        { model: Branch, as: 'branch' },
-        { 
-          model: TransactionDetailsList, 
-          as: 'transactionDetailsList',
-          include: [{ model: Product, as: 'product', include: [{ model: ProductCategory, as: 'categoryInfo' }] }]
-        },
-        { 
-          model: TransactionPaymentMethod, 
-          as: 'transactionPaymentMethod',
-          include: [{ model: PaymentMethod, as: 'paymentMethod' }]
-        },
-        { model: TransactionEmployee, as: 'transactionEmployee' }
-      ],
-      order: [['dateTime', 'DESC']]
-    });
-
-    return transactions.map(t => this.transformToDto(t));
-  }
-
-  async getTransactionByBranchId(branchId) {
-    logger.info('TransactionService.getTransactionByBranchId() invoked');
-    
-    const transactions = await Transaction.findAll({
-      where: { branchId },
-      include: [
-        { model: User, as: 'user' },
-        { model: Customer, as: 'customer' },
-        { model: Branch, as: 'branch' },
         { 
           model: TransactionDetailsList, 
           as: 'transactionDetailsList',
@@ -81,7 +51,6 @@ class TransactionService {
       include: [
         { model: User, as: 'user' },
         { model: Customer, as: 'customer' },
-        { model: Branch, as: 'branch' },
         { 
           model: TransactionDetailsList, 
           as: 'transactionDetailsList',
@@ -106,7 +75,6 @@ class TransactionService {
       include: [
         { model: User, as: 'user' },
         { model: Customer, as: 'customer' },
-        { model: Branch, as: 'branch' },
         { 
           model: TransactionDetailsList, 
           as: 'transactionDetailsList',
@@ -132,7 +100,6 @@ class TransactionService {
       include: [
         { model: User, as: 'user' },
         { model: Customer, as: 'customer' },
-        { model: Branch, as: 'branch' },
         { 
           model: TransactionDetailsList, 
           as: 'transactionDetailsList',
@@ -157,7 +124,6 @@ class TransactionService {
       include: [
         { model: User, as: 'user' },
         { model: Customer, as: 'customer' },
-        { model: Branch, as: 'branch' },
         { 
           model: TransactionDetailsList, 
           as: 'transactionDetailsList',
@@ -183,8 +149,6 @@ class TransactionService {
     // Validate required entities exist
     const customerId = transactionDto.customerDto?.id || transactionDto.customerId;
     const userId = transactionDto.userDto?.id || transactionDto.userId;
-    const branchId = transactionDto.branchDto?.id || transactionDto.branchId;
-    const shopdetailsId = transactionDto.shopDetailsDto?.id || transactionDto.shopdetailsId;
     
     if (customerId) {
       const customer = await Customer.findByPk(customerId);
@@ -202,24 +166,6 @@ class TransactionService {
       }
     } else {
       throw new Error('User ID is required');
-    }
-    
-    if (branchId) {
-      const branch = await Branch.findByPk(branchId);
-      if (!branch) {
-        throw new Error(`Branch with ID ${branchId} not found`);
-      }
-    } else {
-      throw new Error('Branch ID is required');
-    }
-    
-    if (shopdetailsId) {
-      const shopDetails = await ShopDetails.findByPk(shopdetailsId);
-      if (!shopDetails) {
-        throw new Error(`Shop Details with ID ${shopdetailsId} not found`);
-      }
-    } else {
-      throw new Error('Shop Details ID is required');
     }
     
     // Validate transaction details list
@@ -305,8 +251,6 @@ class TransactionService {
       status: transactionDto.status || 'Completed',
       userId: userId,
       customerId: customerId,
-      branchId: branchId,
-      shopdetailsId: shopdetailsId,
       isActive: transactionDto.isActive !== undefined ? transactionDto.isActive : true,
       manualDiscount: transactionDto.manualDiscount || 0,
       employeeDiscount: transactionDto.employeeDiscount || 0,
@@ -333,31 +277,10 @@ class TransactionService {
       });
     }
 
-    // Validate and create transaction employees
-    if (transactionDto.transactionEmployee && transactionDto.transactionEmployee.length > 0) {
-      for (const employeeDto of transactionDto.transactionEmployee) {
-        const employeeUserId = employeeDto.userDto?.id || employeeDto.userId;
-        if (employeeUserId) {
-          const employeeUser = await User.findByPk(employeeUserId);
-          if (!employeeUser) {
-            throw new Error(`Employee user with ID ${employeeUserId} not found`);
-          }
-        }
-      }
-      
-      for (const employeeDto of transactionDto.transactionEmployee) {
-        await TransactionEmployee.create({
-          transactionId: transaction.id,
-          employeeId: employeeDto.userDto?.id || employeeDto.userId
-        });
-      }
-    }
-
     const savedTransaction = await Transaction.findByPk(transaction.id, {
       include: [
         { model: User, as: 'user' },
         { model: Customer, as: 'customer' },
-        { model: Branch, as: 'branch' },
         { 
           model: TransactionDetailsList, 
           as: 'transactionDetailsList',
@@ -386,7 +309,6 @@ class TransactionService {
       include: [
         { model: User, as: 'user' },
         { model: Customer, as: 'customer' },
-        { model: Branch, as: 'branch' },
         { 
           model: TransactionDetailsList, 
           as: 'transactionDetailsList',
@@ -412,7 +334,6 @@ class TransactionService {
       include: [
         { model: User, as: 'user' },
         { model: Customer, as: 'customer' },
-        { model: Branch, as: 'branch' },
         { 
           model: TransactionDetailsList, 
           as: 'transactionDetailsList',
@@ -467,7 +388,6 @@ class TransactionService {
       include: [
         { model: User, as: 'user' },
         { model: Customer, as: 'customer' },
-        { model: Branch, as: 'branch' },
         { 
           model: TransactionDetailsList, 
           as: 'transactionDetailsList',
@@ -491,7 +411,6 @@ class TransactionService {
       include: [
         { model: User, as: 'user' },
         { model: Customer, as: 'customer' },
-        { model: Branch, as: 'branch' },
         { 
           model: TransactionDetailsList, 
           as: 'transactionDetailsList',
@@ -690,21 +609,14 @@ class TransactionService {
       payments
     }));
 
-    // Get banking and payout totals and counts
-    const bankingTotal = await bankingService.getTotalBanking();
-    const payoutTotal = await payoutService.getTotalPayout();
-    const bankingCount = await bankingService.getBankingCount(startDate, endDate);
-    const payoutCount = await payoutService.getPayoutCount(startDate, endDate);
-    
     // Get cash payment total from payment methods
     const cashTotal = overallPaymentMethodTotals['Cash'] || 0.0;
-    
-    // Calculate difference
-    let difference = cashTotal;
-    if (bankingTotal !== 0.0 || payoutTotal !== 0.0 || totalBalanceAmount !== 0.0) {
-      const totalDeductions = bankingTotal + payoutTotal + totalBalanceAmount;
-      difference = cashTotal - totalDeductions;
-    }
+    const bankingTotal = 0.0;
+    const payoutTotal = 0.0;
+    const bankingCount = 0;
+    const payoutCount = 0;
+    const totalDeductions = totalBalanceAmount;
+    const difference = cashTotal - totalDeductions;
 
     return {
       reportGeneratedBy,
@@ -836,11 +748,10 @@ class TransactionService {
       }
     }
 
-    // Get banking and payout totals and counts
-    const bankingTotal = await bankingService.getTotalBanking();
-    const payoutTotal = await payoutService.getTotalPayout();
-    const bankingCount = await bankingService.getBankingCount(startDate, endDate);
-    const payoutCount = await payoutService.getPayoutCount(startDate, endDate);
+    const bankingTotal = 0.0;
+    const payoutTotal = 0.0;
+    const bankingCount = 0;
+    const payoutCount = 0;
     
     // Calculate total cash payments from all dates
     let totalCash = 0.0;
@@ -849,12 +760,8 @@ class TransactionService {
       totalCash += paymentTotals['Cash'] || 0.0;
     }
     
-    // Calculate difference
-    let difference = totalCash;
-    if (bankingTotal !== 0.0 || payoutTotal !== 0.0 || totalBalanceAmount !== 0.0) {
-      const totalDeductions = bankingTotal + payoutTotal + totalBalanceAmount;
-      difference = totalCash - totalDeductions;
-    }
+    const totalDeductions = totalBalanceAmount;
+    const difference = totalCash - totalDeductions;
 
     // Sort dateWiseTotals by date (TreeMap equivalent)
     const sortedDateWiseTotals = {};
@@ -890,7 +797,6 @@ class TransactionService {
       include: [
         { model: User, as: 'user' },
         { model: Customer, as: 'customer' },
-        { model: Branch, as: 'branch' },
         { 
           model: TransactionDetailsList, 
           as: 'transactionDetailsList',
@@ -954,10 +860,6 @@ class TransactionService {
         id: transaction.customer.id,
         name: transaction.customer.name,
         mobileNumber: transaction.customer.mobileNumber
-      } : null,
-      branchDto: transaction.branch ? {
-        id: transaction.branch.id,
-        branchName: transaction.branch.branchName
       } : null,
       transactionDetailsList: (transaction.transactionDetailsList || []).map(detail => ({
         id: detail.id,

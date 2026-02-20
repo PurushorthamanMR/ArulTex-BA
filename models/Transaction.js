@@ -44,16 +44,6 @@ const Transaction = sequelize.define('Transaction', {
     allowNull: true,
     field: 'balanceAmount'
   },
-  branchId: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    field: 'branchId'
-  },
-  shopdetailsId: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    field: 'shopdetailsId'
-  },
   userId: {
     type: DataTypes.INTEGER,
     allowNull: false,

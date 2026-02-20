@@ -1,6 +1,6 @@
 const bcrypt = require('bcryptjs');
 const { Op } = require('sequelize');
-const { User, UserRole, Branch } = require('../models');
+const { User, UserRole } = require('../models');
 const jwtUtil = require('../utils/jwtUtil');
 const logger = require('../config/logger');
 const emailService = require('./emailService');
@@ -34,16 +34,12 @@ class UserService {
       mobileNumber: userDto.mobileNumber,
       isActive: userDto.isActive !== undefined ? userDto.isActive : true,
       userRoleId: userDto.userRoleDto?.id || userDto.userRoleId,
-      branchId: userDto.branchDto?.id || userDto.branchId,
       createdDate: new Date()
     });
 
     // Load with associations
     const userWithAssociations = await User.findByPk(user.id, {
-      include: [
-        { model: UserRole, as: 'userRole' },
-        { model: Branch, as: 'branch' }
-      ]
+      include: [{ model: UserRole, as: 'userRole' }]
     });
 
     return this.transformToDto(userWithAssociations);
@@ -57,10 +53,7 @@ class UserService {
     
     const user = await User.findOne({
       where: { emailAddress: loginDto.username, isActive: true },
-      include: [
-        { model: UserRole, as: 'userRole' },
-        { model: Branch, as: 'branch' }
-      ]
+      include: [{ model: UserRole, as: 'userRole' }]
     });
 
     if (!user) {
@@ -115,10 +108,7 @@ class UserService {
     
     const { count, rows } = await User.findAndCountAll({
       where,
-      include: [
-        { model: UserRole, as: 'userRole' },
-        { model: Branch, as: 'branch' }
-      ],
+      include: [{ model: UserRole, as: 'userRole' }],
       limit: pageSize,
       offset: offset,
       order: [['createdDate', 'DESC']]
@@ -151,10 +141,7 @@ class UserService {
 
     const users = await User.findAll({
       where,
-      include: [
-        { model: UserRole, as: 'userRole' },
-        { model: Branch, as: 'branch' }
-      ]
+      include: [{ model: UserRole, as: 'userRole' }]
     });
 
     return users.map(user => this.transformToDto(user));
@@ -167,10 +154,7 @@ class UserService {
     logger.info('UserService.getUserById() invoked');
     
     const user = await User.findByPk(id, {
-      include: [
-        { model: UserRole, as: 'userRole' },
-        { model: Branch, as: 'branch' }
-      ]
+      include: [{ model: UserRole, as: 'userRole' }]
     });
 
     return user ? [this.transformToDto(user)] : [];
@@ -189,10 +173,7 @@ class UserService {
 
     const users = await User.findAll({
       where: { userRoleId: role.id },
-      include: [
-        { model: UserRole, as: 'userRole' },
-        { model: Branch, as: 'branch' }
-      ]
+      include: [{ model: UserRole, as: 'userRole' }]
     });
 
     return users.map(user => this.transformToDto(user));
@@ -216,15 +197,11 @@ class UserService {
       emailAddress: userDto.emailAddress,
       mobileNumber: userDto.mobileNumber,
       modifiedDate: new Date(),
-      userRoleId: userDto.userRoleDto?.id || userDto.userRoleId || user.userRoleId,
-      branchId: userDto.branchDto?.id || userDto.branchId || user.branchId
+      userRoleId: userDto.userRoleDto?.id || userDto.userRoleId || user.userRoleId
     });
 
     const updatedUser = await User.findByPk(user.id, {
-      include: [
-        { model: UserRole, as: 'userRole' },
-        { model: Branch, as: 'branch' }
-      ]
+      include: [{ model: UserRole, as: 'userRole' }]
     });
 
     return this.transformToDto(updatedUser);
@@ -244,10 +221,7 @@ class UserService {
     await user.update({ isActive: status });
 
     const updatedUser = await User.findByPk(userId, {
-      include: [
-        { model: UserRole, as: 'userRole' },
-        { model: Branch, as: 'branch' }
-      ]
+      include: [{ model: UserRole, as: 'userRole' }]
     });
 
     return this.transformToDto(updatedUser);
@@ -289,10 +263,7 @@ class UserService {
     }
 
     const updatedUser = await User.findByPk(userId, {
-      include: [
-        { model: UserRole, as: 'userRole' },
-        { model: Branch, as: 'branch' }
-      ]
+      include: [{ model: UserRole, as: 'userRole' }]
     });
 
     return this.transformToDto(updatedUser);
@@ -306,10 +277,7 @@ class UserService {
     
     const user = await User.findOne({
       where: { emailAddress },
-      include: [
-        { model: UserRole, as: 'userRole' },
-        { model: Branch, as: 'branch' }
-      ]
+      include: [{ model: UserRole, as: 'userRole' }]
     });
 
     return user ? [this.transformToDto(user)] : [];
@@ -335,15 +303,6 @@ class UserService {
         id: user.userRole.id,
         userRole: user.userRole.userRole,
         isActive: user.userRole.isActive
-      } : null,
-      branchDto: user.branch ? {
-        id: user.branch.id,
-        branchName: user.branch.branchName,
-        branchCode: user.branch.branchCode,
-        address: user.branch.address,
-        contactNumber: user.branch.contactNumber,
-        emailAddress: user.branch.emailAddress,
-        isActive: user.branch.isActive
       } : null
     };
   }

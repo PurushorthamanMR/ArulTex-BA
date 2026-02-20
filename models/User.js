@@ -54,11 +54,6 @@ const User = sequelize.define('User', {
     type: DataTypes.INTEGER,
     allowNull: false,
     field: 'userRoleId'
-  },
-  branchId: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    field: 'branchId'
   }
 }, {
   tableName: 'user',

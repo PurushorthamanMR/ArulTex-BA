@@ -20,11 +20,6 @@ const Stock = sequelize.define('Stock', {
     type: DataTypes.INTEGER,
     allowNull: false,
     field: 'supplierId'
-  },
-  branchId: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    field: 'branchId'
   }
 }, {
   tableName: 'stock',
