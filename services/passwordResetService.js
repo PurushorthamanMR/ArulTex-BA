@@ -21,8 +21,8 @@ class PasswordResetService {
     // Note: Adjust this logic based on your business requirements
     // Currently allowing all roles to reset password
 
-    // Generate reset token
-    const token = crypto.randomBytes(32).toString('hex');
+    // Generate 6-digit reset code
+    const token = String(crypto.randomInt(100000, 1000000));
     const expiryDate = new Date();
     expiryDate.setHours(expiryDate.getHours() + 1); // Token expires in 1 hour
 
@@ -39,16 +39,16 @@ class PasswordResetService {
       await resetToken.update({ token, expiryDate });
     }
 
-    // Send email with token only
+    // Send email with 6-digit code
     const emailSubject = 'Password Reset Request';
     const emailBody = `
       Hello ${user.firstName},
       
-      You requested to reset your password. Please use the token below to reset it:
+      You requested to reset your password. Please use the 6-digit code below to reset it:
       
-      Your Reset Token: ${token}
+      Your Reset Code: ${token}
       
-      This token will expire in 1 hour.
+      This code will expire in 1 hour.
       
       If you didn't request this, please ignore this email.
     `;
@@ -62,7 +62,7 @@ class PasswordResetService {
 
     return {
       success: true,
-      message: 'Password reset link sent to your email'
+      message: 'Password reset code sent to your email'
     };
   }
 
