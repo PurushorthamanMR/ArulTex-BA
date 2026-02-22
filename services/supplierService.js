@@ -2,131 +2,84 @@ const { Op } = require('sequelize');
 const { Supplier } = require('../models');
 const logger = require('../config/logger');
 
-class SupplierService {
-  async saveSupplier(supplierDto) {
-    logger.info('SupplierService.saveSupplier() invoked');
-    
-    const supplier = await Supplier.create({
-      name: supplierDto.name,
-      contactNumber: supplierDto.contactNumber,
-      emailAddress: supplierDto.emailAddress,
-      address: supplierDto.address,
-      isActive: supplierDto.isActive !== undefined ? supplierDto.isActive : true
-    });
-
-    return this.transformToDto(supplier);
-  }
-
-  async getSupplierByName(name) {
-    logger.info('SupplierService.getSupplierByName() invoked');
-    
-    const suppliers = await Supplier.findAll({
-      where: {
-        name: { [Op.like]: `%${name}%` },
-        isActive: true
-      }
-    });
-
-    return suppliers.map(supplier => this.transformToDto(supplier));
-  }
-
-  async updateSupplier(supplierDto) {
-    logger.info('SupplierService.updateSupplier() invoked');
-    
-    const supplier = await Supplier.findByPk(supplierDto.id);
-    if (!supplier) {
-      throw new Error('Supplier not found');
-    }
-
-    await supplier.update({
-      name: supplierDto.name,
-      contactNumber: supplierDto.contactNumber,
-      emailAddress: supplierDto.emailAddress,
-      address: supplierDto.address
-    });
-
-    return this.transformToDto(supplier);
-  }
-
-  async updateSupplierStatus(supplierId, status) {
-    logger.info('SupplierService.updateSupplierStatus() invoked');
-    
-    const supplier = await Supplier.findByPk(supplierId);
-    if (!supplier) {
-      return null;
-    }
-
-    await supplier.update({ isActive: status });
-    return this.transformToDto(supplier);
-  }
-
-  async getSupplierById(id) {
-    logger.info('SupplierService.getSupplierById() invoked');
-    
-    const supplier = await Supplier.findByPk(id);
-    return supplier ? [this.transformToDto(supplier)] : [];
-  }
-
-  async getAllSupplier() {
-    logger.info('SupplierService.getAllSupplier() invoked');
-    
-    const suppliers = await Supplier.findAll({
-      where: { isActive: true },
-      order: [['id', 'DESC']]
-    });
-
-    return suppliers.map(supplier => this.transformToDto(supplier));
-  }
-
-  async getAllPageSupplier(pageNumber, pageSize, status, searchParams) {
-    logger.info('SupplierService.getAllPageSupplier() invoked');
-    
-    const where = {};
-    if (status !== undefined && status !== null) {
-      where.isActive = status;
-    }
-
-    if (searchParams) {
-      if (searchParams.name) {
-        where.name = { [Op.like]: `%${searchParams.name}%` };
-      }
-      if (searchParams.contactNumber) {
-        where.contactNumber = { [Op.like]: `%${searchParams.contactNumber}%` };
-      }
-    }
-
-    const offset = (pageNumber - 1) * pageSize;
-    
-    const { count, rows } = await Supplier.findAndCountAll({
-      where,
-      limit: pageSize,
-      offset: offset,
-      order: [['id', 'DESC']]
-    });
-
-    const suppliers = rows.map(supplier => this.transformToDto(supplier));
-
-    return {
-      content: suppliers,
-      totalElements: count,
-      totalPages: Math.ceil(count / pageSize),
-      pageNumber: pageNumber,
-      pageSize: pageSize
-    };
-  }
-
-  transformToDto(supplier) {
-    if (!supplier) return null;
-    
-    return {
-      id: supplier.id,
-      name: supplier.name,
-      contactNumber: supplier.contactNumber,
-      emailAddress: supplier.emailAddress,
-      address: supplier.address,
-      isActive: supplier.isActive
-    };
-  }
+function toDto(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    supplierName: row.supplierName,
+    phone: row.phone,
+    email: row.email,
+    address: row.address,
+    isActive: row.isActive,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt
+  };
 }
 
-module.exports = new SupplierService();
+async function save(body) {
+  logger.info('SupplierService.save() invoked');
+  const supplier = await Supplier.create({
+    supplierName: body.supplierName,
+    phone: body.phone,
+    email: body.email || null,
+    address: body.address || null,
+    isActive: body.isActive !== undefined ? body.isActive : true
+  });
+  return toDto(supplier);
+}
+
+async function update(body) {
+  logger.info('SupplierService.update() invoked');
+  const supplier = await Supplier.findByPk(body.id);
+  if (!supplier) throw new Error('Supplier not found');
+  await supplier.update({
+    supplierName: body.supplierName ?? supplier.supplierName,
+    phone: body.phone ?? supplier.phone,
+    email: body.email !== undefined ? body.email : supplier.email,
+    address: body.address !== undefined ? body.address : supplier.address,
+    isActive: body.isActive !== undefined ? body.isActive : supplier.isActive
+  });
+  return toDto(supplier);
+}
+
+async function getAll() {
+  logger.info('SupplierService.getAll() invoked');
+  const list = await Supplier.findAll({ order: [['supplierName', 'ASC']] });
+  return list.map(toDto);
+}
+
+async function getById(id) {
+  logger.info('SupplierService.getById() invoked');
+  const supplier = await Supplier.findByPk(id);
+  return toDto(supplier);
+}
+
+async function search(query) {
+  logger.info('SupplierService.search() invoked');
+  const where = {};
+  if (query.supplierName) where.supplierName = { [Op.like]: `%${query.supplierName}%` };
+  if (query.phone) where.phone = { [Op.like]: `%${query.phone}%` };
+  if (query.email) where.email = { [Op.like]: `%${query.email}%` };
+  if (query.isActive !== undefined && query.isActive !== '') {
+    where.isActive = query.isActive === 'true' || query.isActive === true;
+  }
+  const list = await Supplier.findAll({ where, order: [['supplierName', 'ASC']] });
+  return list.map(toDto);
+}
+
+async function deleteById(id) {
+  logger.info('SupplierService.deleteById() invoked');
+  const supplier = await Supplier.findByPk(id);
+  if (!supplier) throw new Error('Supplier not found');
+  await supplier.destroy();
+  return { id };
+}
+
+module.exports = {
+  save,
+  update,
+  getAll,
+  getById,
+  search,
+  deleteById
+};

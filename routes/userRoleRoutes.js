@@ -5,7 +5,7 @@ const { authenticateToken, authorize } = require('../middleware/authMiddleware')
 const { UserRole } = require('../models');
 const logger = require('../config/logger');
 
-router.post('/save', authenticateToken, authorize('DEV', 'ADMIN', 'STAFF'), async (req, res) => {
+router.post('/save', authenticateToken, authorize('ADMIN', 'MANAGER', 'STAFF'), async (req, res) => {
   res.status(501).json(responseUtil.getErrorServiceResponse('Not implemented yet', 501));
 });
 
@@ -13,7 +13,7 @@ router.post('/save', authenticateToken, authorize('DEV', 'ADMIN', 'STAFF'), asyn
  * Get all user roles
  * GET /userRole/getAll
  */
-router.get('/getAll', authenticateToken, authorize('DEV', 'ADMIN', 'STAFF'), async (req, res) => {
+router.get('/getAll', authenticateToken, authorize('ADMIN', 'MANAGER', 'STAFF'), async (req, res) => {
   try {
     logger.info('UserRoleController.getAll() invoked');
     const userRoles = await UserRole.findAll({

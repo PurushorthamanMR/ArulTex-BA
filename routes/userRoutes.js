@@ -27,11 +27,24 @@ router.post('/register', async (req, res) => {
 /**
  * Login user
  * POST /user/login
+ * Body (JSON): { "username" or "emailAddress" or "email": "...", "password": "..." }
+ * Use Content-Type: application/json
  */
 router.post('/login', async (req, res) => {
   try {
     logger.info('UserController.login() invoked');
-    const jwtResponse = await userService.login(req.body);
+    const body = req.body || {};
+    const loginDto = {
+      username: body.username || body.emailAddress || body.email,
+      password: body.password
+    };
+    if (!loginDto.username || !loginDto.password) {
+      return res.status(400).json(responseUtil.getErrorServiceResponse(
+        'Send JSON body with username (or emailAddress or email) and password. Use Content-Type: application/json.',
+        400
+      ));
+    }
+    const jwtResponse = await userService.login(loginDto);
     res.json(responseUtil.getServiceResponse(jwtResponse));
   } catch (error) {
     logger.error('Error during login:', error);
@@ -43,7 +56,7 @@ router.post('/login', async (req, res) => {
  * Get admin message (test endpoint)
  * POST /user/admin
  */
-router.post('/admin', authenticateToken, authorize('DEV', 'ADMIN'), (req, res) => {
+router.post('/admin', authenticateToken, authorize('ADMIN', 'MANAGER'), (req, res) => {
   res.json(responseUtil.getServiceResponse('Hi from admin !!!'));
 });
 
@@ -84,7 +97,7 @@ router.get('/getAllPage', authenticateToken, async (req, res) => {
  * Get user by name
  * GET /user/getByName
  */
-router.get('/getByName', authenticateToken, authorize('DEV', 'ADMIN', 'STAFF'), async (req, res) => {
+router.get('/getByName', authenticateToken, authorize('ADMIN', 'MANAGER', 'STAFF'), async (req, res) => {
   try {
     logger.info('UserController.getUserByName() invoked');
     const firstName = req.query.firstName;
@@ -101,7 +114,7 @@ router.get('/getByName', authenticateToken, authorize('DEV', 'ADMIN', 'STAFF'), 
  * Get user by ID
  * GET /user/getById
  */
-router.get('/getById', authenticateToken, authorize('DEV', 'ADMIN', 'STAFF'), async (req, res) => {
+router.get('/getById', authenticateToken, authorize('ADMIN', 'MANAGER', 'STAFF'), async (req, res) => {
   try {
     logger.info('UserController.getUserById() invoked');
     const id = parseInt(req.query.id);
@@ -117,7 +130,7 @@ router.get('/getById', authenticateToken, authorize('DEV', 'ADMIN', 'STAFF'), as
  * Get users by role
  * GET /user/getByRole
  */
-router.get('/getByRole', authenticateToken, authorize('DEV', 'ADMIN', 'STAFF'), async (req, res) => {
+router.get('/getByRole', authenticateToken, authorize('ADMIN', 'MANAGER', 'STAFF'), async (req, res) => {
   try {
     logger.info('UserController.getUserByRole() invoked');
     const userRole = req.query.userRole;
@@ -133,7 +146,7 @@ router.get('/getByRole', authenticateToken, authorize('DEV', 'ADMIN', 'STAFF'), 
  * Update user details
  * POST /user/update
  */
-router.post('/update', authenticateToken, authorize('DEV', 'ADMIN', 'STAFF'), async (req, res) => {
+router.post('/update', authenticateToken, authorize('ADMIN', 'MANAGER', 'STAFF'), async (req, res) => {
   try {
     logger.info('UserController.updateUserDetails() invoked');
     const userDto = await userService.updateUserDetails(req.body);
@@ -148,7 +161,7 @@ router.post('/update', authenticateToken, authorize('DEV', 'ADMIN', 'STAFF'), as
  * Update user status
  * PUT /user/updateStatus
  */
-router.put('/updateStatus', authenticateToken, authorize('DEV', 'ADMIN', 'STAFF'), async (req, res) => {
+router.put('/updateStatus', authenticateToken, authorize('ADMIN', 'MANAGER', 'STAFF'), async (req, res) => {
   try {
     logger.info('UserController.updateInvoiceStatus() invoked');
     const userId = parseInt(req.query.userId);
@@ -169,7 +182,7 @@ router.put('/updateStatus', authenticateToken, authorize('DEV', 'ADMIN', 'STAFF'
  * Update password
  * PUT /user/updatePassword
  */
-router.put('/updatePassword', authenticateToken, authorize('DEV', 'ADMIN', 'STAFF'), async (req, res) => {
+router.put('/updatePassword', authenticateToken, authorize('ADMIN', 'MANAGER', 'STAFF'), async (req, res) => {
   try {
     logger.info('UserController.updatePassword() invoked');
     const userId = parseInt(req.query.userId);

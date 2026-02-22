@@ -50,9 +50,12 @@ class UserService {
    */
   async login(loginDto) {
     logger.info('UserService.login() invoked');
-    
+    const email = loginDto.username || loginDto.emailAddress || loginDto.email;
+    if (!email || !loginDto.password) {
+      throw new Error('Username/email and password are required');
+    }
     const user = await User.findOne({
-      where: { emailAddress: loginDto.username, isActive: true },
+      where: { emailAddress: email, isActive: true },
       include: [{ model: UserRole, as: 'userRole' }]
     });
 

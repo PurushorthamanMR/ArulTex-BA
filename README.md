@@ -127,7 +127,7 @@ Most of these support `getAll`, `getById`, `getAllPage`, and create/update where
 Authorization: Bearer <accessToken>
 ```
 
-3. Roles are resolved from the user’s role (DEV, ADMIN, STAFF). Admin-only routes use `authorize('DEV', 'ADMIN')`; general staff routes use `authorize('DEV', 'ADMIN', 'STAFF')`.
+3. Roles are resolved from the user’s role (ADMIN, MANAGER, STAFF). Admin-only routes use `authorize('ADMIN', 'MANAGER')`; general staff routes use `authorize('ADMIN', 'MANAGER', 'STAFF')`.
 
 ## Database notes
 

@@ -7,57 +7,76 @@ const Product = sequelize.define('Product', {
     primaryKey: true,
     autoIncrement: true
   },
-  name: {
-    type: DataTypes.STRING,
-    field: 'name'
+  barCode: {
+    type: DataTypes.STRING(100),
+    unique: true,
+    allowNull: true,
+    field: 'barCode'
   },
-  barcode: {
-    type: DataTypes.STRING,
-    field: 'barcode'
+  productName: {
+    type: DataTypes.STRING(255),
+    allowNull: false,
+    field: 'productName'
   },
-  pricePerUnit: {
-    type: DataTypes.DOUBLE,
-    field: 'pricePerUnit'
-  },
-  createdDate: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW,
-    field: 'createdDate'
-  },
-  quantity: {
+  categoryId: {
     type: DataTypes.INTEGER,
-    field: 'quantity'
+    allowNull: false,
+    field: 'categoryId'
   },
-  lowStock: {
+  supplierId: {
     type: DataTypes.INTEGER,
-    field: 'lowStock'
+    allowNull: true,
+    field: 'supplierId'
   },
-  purchasePrice: {
-    type: DataTypes.DOUBLE,
-    field: 'purchasePrice'
+  costPrice: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: false,
+    field: 'costPrice'
+  },
+  sellingPrice: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: false,
+    field: 'sellingPrice'
+  },
+  discountPercentage: {
+    type: DataTypes.DECIMAL(5, 2),
+    defaultValue: 0,
+    field: 'discountPercentage'
+  },
+  stockQty: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
+    field: 'stockQty'
+  },
+  minStockLevel: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0,
+    field: 'minStockLevel'
+  },
+  unit: {
+    type: DataTypes.STRING(20),
+    defaultValue: 'pcs',
+    field: 'unit'
   },
   isActive: {
     type: DataTypes.BOOLEAN,
     defaultValue: true,
     field: 'isActive'
   },
-  discountValidation: {
-    type: DataTypes.BOOLEAN,
-    field: 'discountValidation'
+  createdAt: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW,
+    field: 'createdAt'
   },
-  tax: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    field: 'tax'
-  },
-  productCategory: {
-    type: DataTypes.INTEGER,
-    allowNull: false,
-    field: 'productCategory'
+  updatedAt: {
+    type: DataTypes.DATE,
+    field: 'updatedAt'
   }
 }, {
-  tableName: 'product',
-  timestamps: false
+  tableName: 'products',
+  timestamps: true,
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 });
 
 module.exports = Product;

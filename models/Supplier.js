@@ -7,31 +7,45 @@ const Supplier = sequelize.define('Supplier', {
     primaryKey: true,
     autoIncrement: true
   },
-  name: {
-    type: DataTypes.STRING,
+  supplierName: {
+    type: DataTypes.STRING(255),
     allowNull: false,
-    field: 'name'
+    field: 'supplierName'
   },
-  contactNumber: {
-    type: DataTypes.STRING,
-    field: 'contactNumber'
+  phone: {
+    type: DataTypes.STRING(50),
+    allowNull: false,
+    field: 'phone'
   },
-  emailAddress: {
-    type: DataTypes.STRING,
-    field: 'emailAddress'
+  email: {
+    type: DataTypes.STRING(255),
+    allowNull: true,
+    field: 'email'
   },
   address: {
-    type: DataTypes.STRING,
+    type: DataTypes.STRING(255),
+    allowNull: true,
     field: 'address'
   },
   isActive: {
     type: DataTypes.BOOLEAN,
     defaultValue: true,
     field: 'isActive'
+  },
+  createdAt: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW,
+    field: 'createdAt'
+  },
+  updatedAt: {
+    type: DataTypes.DATE,
+    field: 'updatedAt'
   }
 }, {
-  tableName: 'supplier',
-  timestamps: false
+  tableName: 'suppliers',
+  timestamps: true,
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 });
 
 module.exports = Supplier;

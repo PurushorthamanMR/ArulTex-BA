@@ -7,22 +7,30 @@ const ProductCategory = sequelize.define('ProductCategory', {
     primaryKey: true,
     autoIncrement: true
   },
-  productCategoryName: {
-    type: DataTypes.STRING,
-    field: 'productCategoryName'
+  categoryName: {
+    type: DataTypes.STRING(255),
+    allowNull: false,
+    field: 'categoryName'
   },
   isActive: {
     type: DataTypes.BOOLEAN,
     defaultValue: true,
     field: 'isActive'
   },
-  agevalidation: {
-    type: DataTypes.BOOLEAN,
-    field: 'agevalidation'
+  createdAt: {
+    type: DataTypes.DATE,
+    defaultValue: DataTypes.NOW,
+    field: 'createdAt'
+  },
+  updatedAt: {
+    type: DataTypes.DATE,
+    field: 'updatedAt'
   }
 }, {
-  tableName: 'productCategory',
-  timestamps: false
+  tableName: 'product_categories',
+  timestamps: true,
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
 });
 
 module.exports = ProductCategory;

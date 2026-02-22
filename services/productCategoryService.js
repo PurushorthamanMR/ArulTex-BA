@@ -2,113 +2,75 @@ const { Op } = require('sequelize');
 const { ProductCategory } = require('../models');
 const logger = require('../config/logger');
 
-class ProductCategoryService {
-  async getAll() {
-    logger.info('ProductCategoryService.getAll() invoked');
-    
-    const categories = await ProductCategory.findAll({
-      where: { isActive: true },
-      order: [['id', 'ASC']]
-    });
-
-    return categories.map(cat => this.transformToDto(cat));
-  }
-
-  async getAllPageProductCategory(pageNumber, pageSize, status, searchParams) {
-    logger.info('ProductCategoryService.getAllPageProductCategory() invoked');
-    
-    const where = {};
-    if (status !== undefined && status !== null) {
-      where.isActive = status;
-    }
-
-    if (searchParams && searchParams.productCategoryName) {
-      where.productCategoryName = { [Op.like]: `%${searchParams.productCategoryName}%` };
-    }
-
-    const offset = (pageNumber - 1) * pageSize;
-    
-    const { count, rows } = await ProductCategory.findAndCountAll({
-      where,
-      limit: pageSize,
-      offset: offset,
-      order: [['id', 'DESC']]
-    });
-
-    const categories = rows.map(cat => this.transformToDto(cat));
-
-    return {
-      content: categories,
-      totalElements: count,
-      totalPages: Math.ceil(count / pageSize),
-      pageNumber: pageNumber,
-      pageSize: pageSize
-    };
-  }
-
-  async save(productCategoryDto) {
-    logger.info('ProductCategoryService.save() invoked');
-    
-    const category = await ProductCategory.create({
-      productCategoryName: productCategoryDto.productCategoryName,
-      isActive: productCategoryDto.isActive !== undefined ? productCategoryDto.isActive : true,
-      agevalidation: productCategoryDto.agevalidation !== undefined ? productCategoryDto.agevalidation : false
-    });
-
-    return this.transformToDto(category);
-  }
-
-  async update(productCategoryDto) {
-    logger.info('ProductCategoryService.update() invoked');
-    
-    const category = await ProductCategory.findByPk(productCategoryDto.id);
-    if (!category) {
-      throw new Error('Product category not found');
-    }
-
-    await category.update({
-      productCategoryName: productCategoryDto.productCategoryName,
-      agevalidation: productCategoryDto.agevalidation !== undefined ? productCategoryDto.agevalidation : category.agevalidation
-    });
-
-    return this.transformToDto(category);
-  }
-
-  async getAllByName(productCategoryName) {
-    logger.info('ProductCategoryService.getAllByName() invoked');
-    
-    const categories = await ProductCategory.findAll({
-      where: {
-        productCategoryName: { [Op.like]: `%${productCategoryName}%` },
-        isActive: true
-      }
-    });
-
-    return categories.map(cat => this.transformToDto(cat));
-  }
-
-  async updateProductCategoryStatus(id, status) {
-    logger.info('ProductCategoryService.updateProductCategoryStatus() invoked');
-    
-    const category = await ProductCategory.findByPk(id);
-    if (!category) {
-      return null;
-    }
-
-    await category.update({ isActive: status });
-    return this.transformToDto(category);
-  }
-
-  transformToDto(category) {
-    if (!category) return null;
-    
-    return {
-      id: category.id,
-      productCategoryName: category.productCategoryName,
-      isActive: category.isActive,
-      agevalidation: category.agevalidation
-    };
-  }
+function toDto(row) {
+  if (!row) return null;
+  return {
+    id: row.id,
+    categoryName: row.categoryName,
+    isActive: row.isActive,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt
+  };
 }
 
-module.exports = new ProductCategoryService();
+async function save(body) {
+  logger.info('ProductCategoryService.save() invoked');
+  const category = await ProductCategory.create({
+    categoryName: body.categoryName,
+    isActive: body.isActive !== undefined ? body.isActive : true
+  });
+  return toDto(category);
+}
+
+async function update(body) {
+  logger.info('ProductCategoryService.update() invoked');
+  const category = await ProductCategory.findByPk(body.id);
+  if (!category) throw new Error('Category not found');
+  await category.update({
+    categoryName: body.categoryName ?? category.categoryName,
+    isActive: body.isActive !== undefined ? body.isActive : category.isActive
+  });
+  return toDto(category);
+}
+
+async function getAll() {
+  logger.info('ProductCategoryService.getAll() invoked');
+  const list = await ProductCategory.findAll({ order: [['categoryName', 'ASC']] });
+  return list.map(toDto);
+}
+
+async function getById(id) {
+  logger.info('ProductCategoryService.getById() invoked');
+  const category = await ProductCategory.findByPk(id);
+  return toDto(category);
+}
+
+async function search(query) {
+  logger.info('ProductCategoryService.search() invoked');
+  const where = {};
+  if (query.categoryName) {
+    where.categoryName = { [Op.like]: `%${query.categoryName}%` };
+  }
+  if (query.isActive !== undefined && query.isActive !== '') {
+    where.isActive = query.isActive === 'true' || query.isActive === true;
+  }
+  const list = await ProductCategory.findAll({ where, order: [['categoryName', 'ASC']] });
+  return list.map(toDto);
+}
+
+async function deleteById(id) {
+  logger.info('ProductCategoryService.deleteById() invoked');
+  const category = await ProductCategory.findByPk(id);
+  if (!category) throw new Error('Category not found');
+  await category.destroy();
+  return { id };
+}
+
+module.exports = {
+  save,
+  update,
+  getAll,
+  getById,
+  search,
+  deleteById
+};

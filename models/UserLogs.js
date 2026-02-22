@@ -20,6 +20,23 @@ const UserLogs = sequelize.define('UserLogs', {
     type: DataTypes.INTEGER,
     allowNull: false,
     field: 'userId'
+  },
+  signOff: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    field: 'signOff'
+  },
+  logIn: {
+    type: DataTypes.DATE,
+    field: 'logIn'
+  },
+  logOut: {
+    type: DataTypes.DATE,
+    field: 'logOut'
+  },
+  description: {
+    type: DataTypes.STRING,
+    field: 'description'
   }
 }, {
   tableName: 'userLogs',

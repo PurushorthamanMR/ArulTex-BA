@@ -2,7 +2,7 @@
 	"info": {
 		"_postman_id": "arultex-pos-api-collection",
 		"name": "ArulTex POS API - Node.js",
-		"description": "API collection for ArulTex POS Backend (Node.js/Express). Updated to match current routes: user, product, transaction, customer, productCategory, tax, supplier, stock, paymentMethod, userRole, auth, userLogs. No branch/shop/banking/payout/etc.",
+		"description": "API collection for ArulTex POS Backend. Routes: user, userRole, auth, userLogs, productCategory, supplier, product, purchase, sales, inventory, dashboard, reports. Roles: ADMIN, MANAGER, STAFF.",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
 	"auth": {
@@ -22,132 +22,60 @@
 				{
 					"name": "Register User",
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
+						"auth": { "type": "noauth" },
 						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
 						"body": {
 							"mode": "raw",
 							"raw": "{\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"emailAddress\": \"john.doe@example.com\",\n  \"password\": \"password123\",\n  \"mobileNumber\": \"1234567890\",\n  \"address\": \"123 Main St\",\n  \"userRoleId\": 1,\n  \"isActive\": true\n}"
 						},
-						"url": {
-							"raw": "{{base_url}}/user/register",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"user",
-								"register"
-							]
-						}
+						"url": { "raw": "{{base_url}}/user/register", "host": ["{{base_url}}"], "path": ["user", "register"] }
 					}
 				},
 				{
 					"name": "Login",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"if (pm.response.code === 200) {",
-									"    var jsonData = pm.response.json();",
-									"    if (jsonData.status && jsonData.responseDto && jsonData.responseDto.accessToken) {",
-									"        pm.environment.set(\"jwt_token\", jsonData.responseDto.accessToken);",
-									"    }",
-									"}"
-								]
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "noauth"
-						},
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"username\": \"admin@example.com\",\n  \"password\": \"password123\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/user/login",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"user",
-								"login"
+					"event": [{
+						"listen": "test",
+						"script": {
+							"exec": [
+								"if (pm.response.code === 200) {",
+								"    var jsonData = pm.response.json();",
+								"    if (jsonData.status && jsonData.responseDto && jsonData.responseDto.accessToken) {",
+								"        pm.environment.set(\"jwt_token\", jsonData.responseDto.accessToken);",
+								"    }",
+								"}"
 							]
 						}
+					}],
+					"request": {
+						"auth": { "type": "noauth" },
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"username\": \"mrprusothaman@gmail.com\",\n  \"password\": \"Pruso2002\"\n}"
+						},
+						"url": { "raw": "{{base_url}}/user/login", "host": ["{{base_url}}"], "path": ["user", "login"] }
 					}
 				},
 				{
 					"name": "Forgot Password",
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
+						"auth": { "type": "noauth" },
 						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"emailAddress\": \"user@example.com\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/auth/forgot-password",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"auth",
-								"forgot-password"
-							]
-						}
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": { "mode": "raw", "raw": "{\n  \"emailAddress\": \"user@example.com\"\n}" },
+						"url": { "raw": "{{base_url}}/auth/forgot-password", "host": ["{{base_url}}"], "path": ["auth", "forgot-password"] }
 					}
 				},
 				{
 					"name": "Reset Password",
 					"request": {
-						"auth": {
-							"type": "noauth"
-						},
+						"auth": { "type": "noauth" },
 						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"token\": \"reset_token_here\",\n  \"newPassword\": \"newpassword123\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/auth/reset-password",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"auth",
-								"reset-password"
-							]
-						}
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": { "mode": "raw", "raw": "{\n  \"token\": \"reset_token_here\",\n  \"newPassword\": \"newpassword123\"\n}" },
+						"url": { "raw": "{{base_url}}/auth/reset-password", "host": ["{{base_url}}"], "path": ["auth", "reset-password"] }
 					}
 				}
 			]
@@ -159,39 +87,17 @@
 					"name": "Get All Users (Paginated)",
 					"request": {
 						"method": "GET",
-						"header": [],
 						"url": {
 							"raw": "{{base_url}}/user/getAllPage?pageNumber=1&pageSize=10&status=true",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"user",
-								"getAllPage"
-							],
+							"host": ["{{base_url}}"],
+							"path": ["user", "getAllPage"],
 							"query": [
-								{
-									"key": "pageNumber",
-									"value": "1"
-								},
-								{
-									"key": "pageSize",
-									"value": "10"
-								},
-								{
-									"key": "status",
-									"value": "true"
-								},
-								{
-									"key": "firstName",
-									"value": "",
-									"disabled": true
-								},
-								{
-									"key": "lastName",
-									"value": "",
-									"disabled": true
-								}
+								{ "key": "pageNumber", "value": "1" },
+								{ "key": "pageSize", "value": "10" },
+								{ "key": "status", "value": "true" },
+								{ "key": "firstName", "value": "", "disabled": true },
+								{ "key": "lastName", "value": "", "disabled": true },
+								{ "key": "emailAddress", "value": "", "disabled": true }
 							]
 						}
 					}
@@ -200,449 +106,101 @@
 					"name": "Get User By ID",
 					"request": {
 						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/user/getById?id=1",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"user",
-								"getById"
-							],
-							"query": [
-								{
-									"key": "id",
-									"value": "1"
-								}
-							]
-						}
+						"url": { "raw": "{{base_url}}/user/getById?id=1", "host": ["{{base_url}}"], "path": ["user", "getById"], "query": [{ "key": "id", "value": "1" }] }
 					}
 				},
 				{
 					"name": "Get User By Name",
 					"request": {
 						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/user/getByName?firstName=John&lastName=Doe",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"user",
-								"getByName"
-							],
-							"query": [
-								{
-									"key": "firstName",
-									"value": "John"
-								},
-								{
-									"key": "lastName",
-									"value": "Doe"
-								}
-							]
-						}
+						"url": { "raw": "{{base_url}}/user/getByName?firstName=John&lastName=Doe", "host": ["{{base_url}}"], "path": ["user", "getByName"], "query": [{ "key": "firstName", "value": "John" }, { "key": "lastName", "value": "Doe" }] }
 					}
 				},
 				{
 					"name": "Get User By Email",
 					"request": {
 						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/user/getByEmailAddress?emailAddress=user@example.com",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"user",
-								"getByEmailAddress"
-							],
-							"query": [
-								{
-									"key": "emailAddress",
-									"value": "user@example.com"
-								}
-							]
-						}
+						"url": { "raw": "{{base_url}}/user/getByEmailAddress?emailAddress=user@example.com", "host": ["{{base_url}}"], "path": ["user", "getByEmailAddress"], "query": [{ "key": "emailAddress", "value": "user@example.com" }] }
 					}
 				},
 				{
 					"name": "Get User By Role",
 					"request": {
 						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/user/getByRole?userRole=ADMIN",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"user",
-								"getByRole"
-							],
-							"query": [
-								{
-									"key": "userRole",
-									"value": "ADMIN"
-								}
-							]
-						}
+						"url": { "raw": "{{base_url}}/user/getByRole?userRole=Admin", "host": ["{{base_url}}"], "path": ["user", "getByRole"], "query": [{ "key": "userRole", "value": "Admin" }] }
 					}
 				},
 				{
 					"name": "Update User",
 					"request": {
 						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"id\": 1,\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"emailAddress\": \"john.doe@example.com\",\n  \"mobileNumber\": \"1234567890\",\n  \"address\": \"123 Main St\",\n  \"userRoleId\": 1\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/user/update",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"user",
-								"update"
-							]
-						}
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": { "mode": "raw", "raw": "{\n  \"id\": 1,\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"emailAddress\": \"john.doe@example.com\",\n  \"mobileNumber\": \"1234567890\",\n  \"address\": \"123 Main St\",\n  \"userRoleId\": 1\n}" },
+						"url": { "raw": "{{base_url}}/user/update", "host": ["{{base_url}}"], "path": ["user", "update"] }
 					}
 				},
 				{
 					"name": "Update User Status",
 					"request": {
 						"method": "PUT",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/user/updateStatus?userId=1&status=false",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"user",
-								"updateStatus"
-							],
-							"query": [
-								{
-									"key": "userId",
-									"value": "1"
-								},
-								{
-									"key": "status",
-									"value": "false"
-								}
-							]
-						}
+						"url": { "raw": "{{base_url}}/user/updateStatus?userId=1&status=false", "host": ["{{base_url}}"], "path": ["user", "updateStatus"], "query": [{ "key": "userId", "value": "1" }, { "key": "status", "value": "false" }] }
 					}
 				},
 				{
 					"name": "Update Password",
 					"request": {
 						"method": "PUT",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/user/updatePassword?userId=1&password=newpassword123&changedByUserId=1",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"user",
-								"updatePassword"
-							],
-							"query": [
-								{
-									"key": "userId",
-									"value": "1"
-								},
-								{
-									"key": "password",
-									"value": "newpassword123"
-								},
-								{
-									"key": "changedByUserId",
-									"value": "1"
-								}
-							]
-						}
+						"url": { "raw": "{{base_url}}/user/updatePassword?userId=1&password=newpassword123&changedByUserId=1", "host": ["{{base_url}}"], "path": ["user", "updatePassword"], "query": [{ "key": "userId", "value": "1" }, { "key": "password", "value": "newpassword123" }, { "key": "changedByUserId", "value": "1" }] }
 					}
 				}
 			]
 		},
 		{
-			"name": "Products",
+			"name": "User Roles",
 			"item": [
 				{
-					"name": "Save Product",
+					"name": "Save User Role",
 					"request": {
 						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"name\": \"Product Name\",\n  \"barcode\": \"123456789\",\n  \"pricePerUnit\": 29.99,\n  \"tax\": 1,\n  \"productCategory\": 1,\n  \"quantity\": 100,\n  \"lowStock\": 10,\n  \"purchasePrice\": 20.00,\n  \"discountValidation\": true\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/product/save",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"product",
-								"save"
-							]
-						}
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": { "mode": "raw", "raw": "{\n  \"userRole\": \"Staff\",\n  \"isActive\": true\n}" },
+						"url": { "raw": "{{base_url}}/userRole/save", "host": ["{{base_url}}"], "path": ["userRole", "save"] }
 					}
 				},
 				{
-					"name": "Get All Products",
+					"name": "Get All User Roles",
 					"request": {
 						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/product/getAll",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"product",
-								"getAll"
-							]
-						}
+						"url": { "raw": "{{base_url}}/userRole/getAll", "host": ["{{base_url}}"], "path": ["userRole", "getAll"] }
 					}
-				},
+				}
+			]
+		},
+		{
+			"name": "User Logs",
+			"item": [
 				{
-					"name": "Get All Products (Paginated)",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/product/getAllPage?pageNumber=1&pageSize=10&status=true",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"product",
-								"getAllPage"
-							],
-							"query": [
-								{
-									"key": "pageNumber",
-									"value": "1"
-								},
-								{
-									"key": "pageSize",
-									"value": "10"
-								},
-								{
-									"key": "status",
-									"value": "true"
-								}
-							]
-						}
-					}
-				},
-				{
-					"name": "Get Product By ID",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/product/getById?id=1",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"product",
-								"getById"
-							],
-							"query": [
-								{
-									"key": "id",
-									"value": "1"
-								}
-							]
-						}
-					}
-				},
-				{
-					"name": "Get Product By Barcode",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/product/getByBarcode?barcode=123456789",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"product",
-								"getByBarcode"
-							],
-							"query": [
-								{
-									"key": "barcode",
-									"value": "123456789"
-								}
-							]
-						}
-					}
-				},
-				{
-					"name": "Get Product By Name",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/product/getByName?name=Product Name",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"product",
-								"getByName"
-							],
-							"query": [
-								{
-									"key": "name",
-									"value": "Product Name"
-								}
-							]
-						}
-					}
-				},
-				{
-					"name": "Update Product",
+					"name": "Save User Log",
 					"request": {
 						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"id\": 1,\n  \"name\": \"Updated Product Name\",\n  \"barcode\": \"123456789\",\n  \"pricePerUnit\": 39.99,\n  \"tax\": 1,\n  \"productCategory\": 1,\n  \"quantity\": 150,\n  \"lowStock\": 15\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/product/update",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"product",
-								"update"
-							]
-						}
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": { "mode": "raw", "raw": "{\n  \"userId\": 1,\n  \"description\": \"Login\",\n  \"signOff\": false,\n  \"logIn\": \"2025-01-01T10:00:00.000Z\",\n  \"logOut\": null\n}" },
+						"url": { "raw": "{{base_url}}/userLogs/save", "host": ["{{base_url}}"], "path": ["userLogs", "save"] }
 					}
 				},
 				{
-					"name": "Update Product Status",
-					"request": {
-						"method": "PUT",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/product/updateStatus?productId=1&status=false",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"product",
-								"updateStatus"
-							],
-							"query": [
-								{
-									"key": "productId",
-									"value": "1"
-								},
-								{
-									"key": "status",
-									"value": "false"
-								}
-							]
-						}
-					}
-				},
-				{
-					"name": "Get Products By Category",
+					"name": "Get All User Logs",
 					"request": {
 						"method": "GET",
-						"header": [],
 						"url": {
-							"raw": "{{base_url}}/product/getByProductCategoryName?pageNumber=1&pageSize=10&categoryName=Category&status=true",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"product",
-								"getByProductCategoryName"
-							],
+							"raw": "{{base_url}}/userLogs/getAll?pageNumber=1&pageSize=10",
+							"host": ["{{base_url}}"],
+							"path": ["userLogs", "getAll"],
 							"query": [
-								{
-									"key": "pageNumber",
-									"value": "1"
-								},
-								{
-									"key": "pageSize",
-									"value": "10"
-								},
-								{
-									"key": "categoryName",
-									"value": "Category"
-								},
-								{
-									"key": "status",
-									"value": "true"
-								}
-							]
-						}
-					}
-				},
-				{
-					"name": "Get Products By Tax Percentage",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/product/getByTaxPercentage?pageNumber=1&pageSize=10&taxPercentage=10&status=true",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"product",
-								"getByTaxPercentage"
-							],
-							"query": [
-								{
-									"key": "pageNumber",
-									"value": "1"
-								},
-								{
-									"key": "pageSize",
-									"value": "10"
-								},
-								{
-									"key": "taxPercentage",
-									"value": "10"
-								},
-								{
-									"key": "status",
-									"value": "true"
-								}
+								{ "key": "pageNumber", "value": "1" },
+								{ "key": "pageSize", "value": "10" },
+								{ "key": "status", "value": "", "disabled": true },
+								{ "key": "description", "value": "", "disabled": true }
 							]
 						}
 					}
@@ -656,772 +214,46 @@
 					"name": "Save Product Category",
 					"request": {
 						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"productCategoryName\": \"Electronics\",\n  \"agevalidation\": false\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/productCategory/save",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"productCategory",
-								"save"
-							]
-						}
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": { "mode": "raw", "raw": "{\n  \"categoryName\": \"Electronics\",\n  \"isActive\": true\n}" },
+						"url": { "raw": "{{base_url}}/productCategory/save", "host": ["{{base_url}}"], "path": ["productCategory", "save"] }
+					}
+				},
+				{
+					"name": "Update Product Category",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": { "mode": "raw", "raw": "{\n  \"id\": 1,\n  \"categoryName\": \"Electronics Updated\",\n  \"isActive\": true\n}" },
+						"url": { "raw": "{{base_url}}/productCategory/update", "host": ["{{base_url}}"], "path": ["productCategory", "update"] }
 					}
 				},
 				{
 					"name": "Get All Product Categories",
 					"request": {
 						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/productCategory/getAll",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"productCategory",
-								"getAll"
-							]
-						}
+						"url": { "raw": "{{base_url}}/productCategory/getAll", "host": ["{{base_url}}"], "path": ["productCategory", "getAll"] }
 					}
 				},
 				{
-					"name": "Get All Product Categories (Paginated)",
+					"name": "Get Product Category By ID",
 					"request": {
 						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/productCategory/getAllPage?pageNumber=1&pageSize=10&status=true",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"productCategory",
-								"getAllPage"
-							],
-							"query": [
-								{
-									"key": "pageNumber",
-									"value": "1"
-								},
-								{
-									"key": "pageSize",
-									"value": "10"
-								},
-								{
-									"key": "status",
-									"value": "true"
-								}
-							]
-						}
+						"url": { "raw": "{{base_url}}/productCategory/getById?id=1", "host": ["{{base_url}}"], "path": ["productCategory", "getById"], "query": [{ "key": "id", "value": "1" }] }
 					}
 				},
 				{
-					"name": "Get Product Category By Name",
+					"name": "Search Product Categories",
 					"request": {
 						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/productCategory/getByName?productCategoryName=Electronics",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"productCategory",
-								"getByName"
-							],
-							"query": [
-								{
-									"key": "productCategoryName",
-									"value": "Electronics"
-								}
-							]
-						}
+						"url": { "raw": "{{base_url}}/productCategory/search?categoryName=Elec&isActive=true", "host": ["{{base_url}}"], "path": ["productCategory", "search"], "query": [{ "key": "categoryName", "value": "Elec" }, { "key": "isActive", "value": "true" }] }
 					}
 				},
 				{
-					"name": "Update Product Category",
+					"name": "Delete Product Category",
 					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"id\": 1,\n  \"productCategoryName\": \"Updated Category\",\n  \"agevalidation\": false\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/productCategory/update",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"productCategory",
-								"update"
-							]
-						}
-					}
-				},
-				{
-					"name": "Update Product Category Status",
-					"request": {
-						"method": "PUT",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/productCategory/updateStatus?id=1&status=false",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"productCategory",
-								"updateStatus"
-							],
-							"query": [
-								{
-									"key": "id",
-									"value": "1"
-								},
-								{
-									"key": "status",
-									"value": "false"
-								}
-							]
-						}
-					}
-				}
-			]
-		},
-		{
-			"name": "Transactions",
-			"item": [
-				{
-					"name": "Save Transaction",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"status\": \"Completed\",\n  \"isActive\": 1,\n  \"customerDto\": { \"id\": 3 },\n  \"userDto\": { \"id\": 2 },\n  \"totalAmount\": 2000.00,\n  \"manualDiscount\": 10.00,\n  \"employeeDiscount\": 10.00,\n  \"transactionDetailsList\": [\n    { \"productDto\": { \"id\": 9 }, \"quantity\": 1, \"unitPrice\": 400.00, \"discount\": 50.00 },\n    { \"productDto\": { \"id\": 13 }, \"quantity\": 1, \"unitPrice\": 400.00, \"discount\": 10.00 },\n    { \"productDto\": { \"id\": 11 }, \"quantity\": 1, \"unitPrice\": 400.00, \"discount\": 50.00 }\n  ],\n  \"transactionPaymentMethod\": [\n    { \"paymentMethodDto\": { \"id\": 2 }, \"amount\": 4000.00, \"isActive\": 1 }\n  ]\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/transaction/save",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"transaction",
-								"save"
-							]
-						}
-					}
-				},
-				{
-					"name": "Get All Transactions",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/transaction/getAll",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"transaction",
-								"getAll"
-							]
-						}
-					}
-				},
-				{
-					"name": "Get All Transactions (Paginated)",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/transaction/getAllPage?pageNumber=1&pageSize=10",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"transaction",
-								"getAllPage"
-							],
-							"query": [
-								{
-									"key": "pageNumber",
-									"value": "1"
-								},
-								{
-									"key": "pageSize",
-									"value": "10"
-								}
-							]
-						}
-					}
-				},
-				{
-					"name": "Get Transaction By ID",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/transaction/getById?id=1",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"transaction",
-								"getById"
-							],
-							"query": [
-								{
-									"key": "id",
-									"value": "1"
-								}
-							]
-						}
-					}
-				},
-				{
-					"name": "Get Transactions By Date Range",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/transaction/getByDateRange?startDate=2025-02-01T00:00:00&endDate=2025-02-28T23:59:59",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"transaction",
-								"getByDateRange"
-							],
-							"query": [
-								{
-									"key": "startDate",
-									"value": "2025-02-01T00:00:00"
-								},
-								{
-									"key": "endDate",
-									"value": "2025-02-28T23:59:59"
-								}
-							]
-						}
-					}
-				},
-				{
-					"name": "Get Transactions By User",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/transaction/getByUserId?userId=1",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"transaction",
-								"getByUserId"
-							],
-							"query": [
-								{
-									"key": "userId",
-									"value": "1"
-								}
-							]
-						}
-					}
-				},
-				{
-					"name": "Get Transactions By Customer",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/transaction/getByCustomerId?customerId=1",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"transaction",
-								"getByCustomerId"
-							],
-							"query": [
-								{
-									"key": "customerId",
-									"value": "1"
-								}
-							]
-						}
-					}
-				},
-				{
-					"name": "Get X Report",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/transaction/xReport?userId=1",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"transaction",
-								"xReport"
-							],
-							"query": [
-								{
-									"key": "userId",
-									"value": "1"
-								}
-							]
-						}
-					}
-				},
-				{
-					"name": "Get Z Report",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/transaction/zReport?userId=1",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"transaction",
-								"zReport"
-							],
-							"query": [
-								{
-									"key": "userId",
-									"value": "1"
-								}
-							]
-						}
-					}
-				},
-				{
-					"name": "Get Cash Total",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/transaction/getCashTotal?userId=1",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"transaction",
-								"getCashTotal"
-							],
-							"query": [
-								{
-									"key": "userId",
-									"value": "1"
-								}
-							]
-						}
-					}
-				},
-				{
-					"name": "Update Transaction",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"id\": 1,\n  \"totalAmount\": 150.00,\n  \"status\": \"COMPLETED\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/transaction/update",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"transaction",
-								"update"
-							]
-						}
-					}
-				}
-			]
-		},
-		{
-			"name": "Customers",
-			"item": [
-				{
-					"name": "Save Customer",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"name\": \"John Doe\",\n  \"mobileNumber\": \"1234567890\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/customer/save",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"customer",
-								"save"
-							]
-						}
-					}
-				},
-				{
-					"name": "Get All Customers",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/customer/getAll",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"customer",
-								"getAll"
-							]
-						}
-					}
-				},
-				{
-					"name": "Get All Customers (Paginated)",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/customer/getAllPage?pageNumber=1&pageSize=10&status=true",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"customer",
-								"getAllPage"
-							],
-							"query": [
-								{
-									"key": "pageNumber",
-									"value": "1"
-								},
-								{
-									"key": "pageSize",
-									"value": "10"
-								},
-								{
-									"key": "status",
-									"value": "true"
-								}
-							]
-						}
-					}
-				},
-				{
-					"name": "Get Customer By ID",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/customer/getById?id=1",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"customer",
-								"getById"
-							],
-							"query": [
-								{
-									"key": "id",
-									"value": "1"
-								}
-							]
-						}
-					}
-				},
-				{
-					"name": "Get Customer By Name",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/customer/getByName?name=John Doe",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"customer",
-								"getByName"
-							],
-							"query": [
-								{
-									"key": "name",
-									"value": "John Doe"
-								}
-							]
-						}
-					}
-				},
-				{
-					"name": "Get Customer By Mobile Number",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/customer/getByMobileNumber?mobileNumber=1234567890",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"customer",
-								"getByMobileNumber"
-							],
-							"query": [
-								{
-									"key": "mobileNumber",
-									"value": "1234567890"
-								}
-							]
-						}
-					}
-				},
-				{
-					"name": "Update Customer",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"id\": 1,\n  \"name\": \"John Doe Updated\",\n  \"mobileNumber\": \"1234567890\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/customer/update",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"customer",
-								"update"
-							]
-						}
-					}
-				},
-				{
-					"name": "Update Customer Status",
-					"request": {
-						"method": "PUT",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/customer/updateStatus?customerId=1&status=false",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"customer",
-								"updateStatus"
-							],
-							"query": [
-								{
-									"key": "customerId",
-									"value": "1"
-								},
-								{
-									"key": "status",
-									"value": "false"
-								}
-							]
-						}
-					}
-				}
-			]
-		},
-		{
-			"name": "Tax",
-			"item": [
-				{
-					"name": "Save Tax",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"taxPercentage\": 10.0\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/tax/save",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"tax",
-								"save"
-							]
-						}
-					}
-				},
-				{
-					"name": "Get All Taxes",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/tax/getAll",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"tax",
-								"getAll"
-							]
-						}
-					}
-				},
-				{
-					"name": "Get All Taxes (Paginated)",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/tax/getAllPage?pageNumber=1&pageSize=10&status=true",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"tax",
-								"getAllPage"
-							],
-							"query": [
-								{
-									"key": "pageNumber",
-									"value": "1"
-								},
-								{
-									"key": "pageSize",
-									"value": "10"
-								},
-								{
-									"key": "status",
-									"value": "true"
-								}
-							]
-						}
-					}
-				},
-				{
-					"name": "Get Tax By Percentage",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/tax/getByName?taxPercentage=10",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"tax",
-								"getByName"
-							],
-							"query": [
-								{
-									"key": "taxPercentage",
-									"value": "10"
-								}
-							]
-						}
-					}
-				},
-				{
-					"name": "Update Tax",
-					"request": {
-						"method": "PUT",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"id\": 1,\n  \"taxPercentage\": 15.0\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/tax/update",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"tax",
-								"update"
-							]
-						}
-					}
-				},
-				{
-					"name": "Update Tax Status",
-					"request": {
-						"method": "PUT",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/tax/updateStatus?id=1&status=false",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"tax",
-								"updateStatus"
-							],
-							"query": [
-								{
-									"key": "id",
-									"value": "1"
-								},
-								{
-									"key": "status",
-									"value": "false"
-								}
-							]
-						}
+						"method": "DELETE",
+						"url": { "raw": "{{base_url}}/productCategory/delete?id=1", "host": ["{{base_url}}"], "path": ["productCategory", "delete"], "query": [{ "key": "id", "value": "1" }] }
 					}
 				}
 			]
@@ -1433,543 +265,292 @@
 					"name": "Save Supplier",
 					"request": {
 						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"name\": \"Supplier Name\",\n  \"contactNumber\": \"1234567890\",\n  \"emailAddress\": \"supplier@example.com\",\n  \"address\": \"123 Supplier St\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/supplier/save",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"supplier",
-								"save"
-							]
-						}
-					}
-				},
-				{
-					"name": "Get All Suppliers",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/supplier/getAll",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"supplier",
-								"getAll"
-							]
-						}
-					}
-				},
-				{
-					"name": "Get All Suppliers (Paginated)",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/supplier/getAllPage?pageNumber=1&pageSize=10&status=true",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"supplier",
-								"getAllPage"
-							],
-							"query": [
-								{
-									"key": "pageNumber",
-									"value": "1"
-								},
-								{
-									"key": "pageSize",
-									"value": "10"
-								},
-								{
-									"key": "status",
-									"value": "true"
-								}
-							]
-						}
-					}
-				},
-				{
-					"name": "Get Supplier By ID",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/supplier/getById?id=1",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"supplier",
-								"getById"
-							],
-							"query": [
-								{
-									"key": "id",
-									"value": "1"
-								}
-							]
-						}
-					}
-				},
-				{
-					"name": "Get Supplier By Name",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/supplier/getByName?name=Supplier Name",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"supplier",
-								"getByName"
-							],
-							"query": [
-								{
-									"key": "name",
-									"value": "Supplier Name"
-								}
-							]
-						}
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": { "mode": "raw", "raw": "{\n  \"supplierName\": \"ABC Supplies\",\n  \"phone\": \"+94112345678\",\n  \"email\": \"abc@supplier.com\",\n  \"address\": \"123 Supplier St\",\n  \"isActive\": true\n}" },
+						"url": { "raw": "{{base_url}}/supplier/save", "host": ["{{base_url}}"], "path": ["supplier", "save"] }
 					}
 				},
 				{
 					"name": "Update Supplier",
 					"request": {
 						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"id\": 1,\n  \"name\": \"Updated Supplier\",\n  \"contactNumber\": \"9876543210\"\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/supplier/update",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"supplier",
-								"update"
-							]
-						}
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": { "mode": "raw", "raw": "{\n  \"id\": 1,\n  \"supplierName\": \"ABC Supplies Ltd\",\n  \"phone\": \"+94112345678\",\n  \"email\": \"abc@supplier.com\",\n  \"address\": \"123 Supplier St\",\n  \"isActive\": true\n}" },
+						"url": { "raw": "{{base_url}}/supplier/update", "host": ["{{base_url}}"], "path": ["supplier", "update"] }
 					}
 				},
 				{
-					"name": "Update Supplier Status",
-					"request": {
-						"method": "PUT",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/supplier/updateStatus?supplierId=1&status=false",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"supplier",
-								"updateStatus"
-							],
-							"query": [
-								{
-									"key": "supplierId",
-									"value": "1"
-								},
-								{
-									"key": "status",
-									"value": "false"
-								}
-							]
-						}
-					}
+					"name": "Get All Suppliers",
+					"request": { "method": "GET", "url": { "raw": "{{base_url}}/supplier/getAll", "host": ["{{base_url}}"], "path": ["supplier", "getAll"] } }
+				},
+				{
+					"name": "Get Supplier By ID",
+					"request": { "method": "GET", "url": { "raw": "{{base_url}}/supplier/getById?id=1", "host": ["{{base_url}}"], "path": ["supplier", "getById"], "query": [{ "key": "id", "value": "1" }] } }
+				},
+				{
+					"name": "Search Suppliers",
+					"request": { "method": "GET", "url": { "raw": "{{base_url}}/supplier/search?supplierName=ABC&isActive=true", "host": ["{{base_url}}"], "path": ["supplier", "search"], "query": [{ "key": "supplierName", "value": "ABC" }, { "key": "isActive", "value": "true" }] } }
+				},
+				{
+					"name": "Delete Supplier",
+					"request": { "method": "DELETE", "url": { "raw": "{{base_url}}/supplier/delete?id=1", "host": ["{{base_url}}"], "path": ["supplier", "delete"], "query": [{ "key": "id", "value": "1" }] } }
 				}
 			]
 		},
 		{
-			"name": "Stock",
+			"name": "Products",
 			"item": [
 				{
-					"name": "Save Stock",
+					"name": "Save Product",
 					"request": {
 						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"quantity\": 100,\n  \"productId\": 1,\n  \"supplierId\": 1\n}"
+							"raw": "{\n  \"barCode\": \"8901234567890\",\n  \"productName\": \"Widget A\",\n  \"categoryId\": 1,\n  \"supplierId\": 1,\n  \"costPrice\": 100.00,\n  \"discountPercentage\": 10,\n  \"stockQty\": 0,\n  \"minStockLevel\": 5,\n  \"unit\": \"pcs\",\n  \"isActive\": true\n}"
 						},
-						"url": {
-							"raw": "{{base_url}}/stock/save",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"stock",
-								"save"
-							]
-						}
+						"url": { "raw": "{{base_url}}/product/save", "host": ["{{base_url}}"], "path": ["product", "save"] }
 					}
 				},
 				{
-					"name": "Get All Stock",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/stock/getAll",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"stock",
-								"getAll"
-							]
-						}
-					}
-				},
-				{
-					"name": "Get All Stock (Paginated)",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/stock/getAllPage?pageNumber=1&pageSize=10&status=true",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"stock",
-								"getAllPage"
-							],
-							"query": [
-								{
-									"key": "pageNumber",
-									"value": "1"
-								},
-								{
-									"key": "pageSize",
-									"value": "10"
-								},
-								{
-									"key": "status",
-									"value": "true"
-								}
-							]
-						}
-					}
-				},
-				{
-					"name": "Get Stock By ID",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/stock/getById?id=1",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"stock",
-								"getById"
-							],
-							"query": [
-								{
-									"key": "id",
-									"value": "1"
-								}
-							]
-						}
-					}
-				},
-				{
-					"name": "Get Stock By Product ID",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/stock/getByProductId?productId=1",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"stock",
-								"getByProductId"
-							],
-							"query": [
-								{
-									"key": "productId",
-									"value": "1"
-								}
-							]
-						}
-					}
-				},
-				{
-					"name": "Get Stock By Product Category ID",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/stock/getByProductCategoryId?productCategoryId=1",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"stock",
-								"getByProductCategoryId"
-							],
-							"query": [
-								{
-									"key": "productCategoryId",
-									"value": "1"
-								}
-							]
-						}
-					}
-				},
-				{
-					"name": "Get Stock By Quantity Range",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/stock/getByQuantityRange?minQuantity=10&maxQuantity=100",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"stock",
-								"getByQuantityRange"
-							],
-							"query": [
-								{
-									"key": "minQuantity",
-									"value": "10"
-								},
-								{
-									"key": "maxQuantity",
-									"value": "100"
-								}
-							]
-						}
-					}
-				},
-				{
-					"name": "Update Stock",
+					"name": "Update Product",
 					"request": {
 						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"id\": 1,\n  \"quantity\": 150,\n  \"productId\": 1,\n  \"supplierId\": 1\n}"
+							"raw": "{\n  \"id\": 1,\n  \"productName\": \"Widget A Updated\",\n  \"categoryId\": 1,\n  \"supplierId\": 1,\n  \"costPrice\": 100.00,\n  \"discountPercentage\": 15,\n  \"stockQty\": 50,\n  \"minStockLevel\": 5,\n  \"unit\": \"pcs\",\n  \"isActive\": true\n}"
 						},
+						"url": { "raw": "{{base_url}}/product/update", "host": ["{{base_url}}"], "path": ["product", "update"] }
+					}
+				},
+				{
+					"name": "Get All Products",
+					"request": { "method": "GET", "url": { "raw": "{{base_url}}/product/getAll", "host": ["{{base_url}}"], "path": ["product", "getAll"] } }
+				},
+				{
+					"name": "Get All Products (Paginated)",
+					"request": {
+						"method": "GET",
 						"url": {
-							"raw": "{{base_url}}/stock/update",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"stock",
-								"update"
+							"raw": "{{base_url}}/product/getAllPaginated?pageNumber=1&pageSize=10&isActive=true",
+							"host": ["{{base_url}}"],
+							"path": ["product", "getAllPaginated"],
+							"query": [
+								{ "key": "pageNumber", "value": "1" },
+								{ "key": "pageSize", "value": "10" },
+								{ "key": "isActive", "value": "true" },
+								{ "key": "productName", "value": "", "disabled": true },
+								{ "key": "barCode", "value": "", "disabled": true },
+								{ "key": "categoryId", "value": "", "disabled": true },
+								{ "key": "supplierId", "value": "", "disabled": true }
 							]
 						}
 					}
 				},
 				{
-					"name": "Update Stock Status",
-					"request": {
-						"method": "PUT",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/stock/updateStatus?stockId=1&status=false",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"stock",
-								"updateStatus"
-							],
-							"query": [
-								{
-									"key": "stockId",
-									"value": "1"
-								},
-								{
-									"key": "status",
-									"value": "false"
-								}
-							]
-						}
-					}
+					"name": "Get Product By ID",
+					"request": { "method": "GET", "url": { "raw": "{{base_url}}/product/getById?id=1", "host": ["{{base_url}}"], "path": ["product", "getById"], "query": [{ "key": "id", "value": "1" }] } }
+				},
+				{
+					"name": "Search Products",
+					"request": { "method": "GET", "url": { "raw": "{{base_url}}/product/search?productName=Widget&isActive=true", "host": ["{{base_url}}"], "path": ["product", "search"], "query": [{ "key": "productName", "value": "Widget" }, { "key": "isActive", "value": "true" }] } }
+				},
+				{
+					"name": "Get Products By Category",
+					"request": { "method": "GET", "url": { "raw": "{{base_url}}/product/getByCategory?categoryId=1", "host": ["{{base_url}}"], "path": ["product", "getByCategory"], "query": [{ "key": "categoryId", "value": "1" }] } }
+				},
+				{
+					"name": "Get Products By Price",
+					"request": { "method": "GET", "url": { "raw": "{{base_url}}/product/getByPrice?minPrice=10&maxPrice=500", "host": ["{{base_url}}"], "path": ["product", "getByPrice"], "query": [{ "key": "minPrice", "value": "10" }, { "key": "maxPrice", "value": "500" }] } }
+				},
+				{
+					"name": "Delete Product",
+					"request": { "method": "DELETE", "url": { "raw": "{{base_url}}/product/delete?id=1", "host": ["{{base_url}}"], "path": ["product", "delete"], "query": [{ "key": "id", "value": "1" }] } }
 				}
 			]
 		},
 		{
-			"name": "Payment Methods",
+			"name": "Purchases",
 			"item": [
 				{
-					"name": "Save Payment Method",
+					"name": "Save Purchase",
 					"request": {
 						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"type\": \"CASH\"\n}"
+							"raw": "{\n  \"supplierId\": 1,\n  \"userId\": 1,\n  \"status\": \"Completed\",\n  \"items\": [\n    { \"productId\": 1, \"quantity\": 10, \"costPrice\": 100.00 },\n    { \"productId\": 2, \"quantity\": 5, \"costPrice\": 50.00 }\n  ]\n}"
 						},
-						"url": {
-							"raw": "{{base_url}}/paymentMethod/save",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"paymentMethod",
-								"save"
-							]
-						}
-					}
-				}
-			]
-		},
-		{
-			"name": "User Roles",
-			"item": [
-				{
-					"name": "Save User Role",
-					"request": {
-						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
-						"body": {
-							"mode": "raw",
-							"raw": "{\n  \"userRole\": \"MANAGER\",\n  \"isActive\": true\n}"
-						},
-						"url": {
-							"raw": "{{base_url}}/userRole/save",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"userRole",
-								"save"
-							]
-						}
+						"url": { "raw": "{{base_url}}/purchase/save", "host": ["{{base_url}}"], "path": ["purchase", "save"] }
 					}
 				},
 				{
-					"name": "Get All User Roles",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/userRole/getAll",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"userRole",
-								"getAll"
-							]
-						}
-					}
-				}
-			]
-		},
-		{
-			"name": "User Logs",
-			"item": [
-				{
-					"name": "Save User Log",
+					"name": "Update Purchase",
 					"request": {
 						"method": "POST",
-						"header": [
-							{
-								"key": "Content-Type",
-								"value": "application/json"
-							}
-						],
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"action\": \"LOGIN\",\n  \"userId\": 1\n}"
+							"raw": "{\n  \"id\": 1,\n  \"supplierId\": 1,\n  \"status\": \"Completed\",\n  \"items\": [\n    { \"productId\": 1, \"quantity\": 15, \"costPrice\": 100.00 }\n  ]\n}"
 						},
-						"url": {
-							"raw": "{{base_url}}/userLogs/save",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"userLogs",
-								"save"
-							]
-						}
+						"url": { "raw": "{{base_url}}/purchase/update", "host": ["{{base_url}}"], "path": ["purchase", "update"] }
 					}
 				},
 				{
-					"name": "Get All User Logs",
+					"name": "Get All Purchases",
+					"request": { "method": "GET", "url": { "raw": "{{base_url}}/purchase/getAll", "host": ["{{base_url}}"], "path": ["purchase", "getAll"] } }
+				},
+				{
+					"name": "Get Purchase By ID",
+					"request": { "method": "GET", "url": { "raw": "{{base_url}}/purchase/getById?id=1", "host": ["{{base_url}}"], "path": ["purchase", "getById"], "query": [{ "key": "id", "value": "1" }] } }
+				},
+				{
+					"name": "Get Purchase Items By Product ID",
+					"request": { "method": "GET", "url": { "raw": "{{base_url}}/purchase/getByProductId?productId=1", "host": ["{{base_url}}"], "path": ["purchase", "getByProductId"], "query": [{ "key": "productId", "value": "1" }] } }
+				},
+				{
+					"name": "Search Purchases",
+					"request": { "method": "GET", "url": { "raw": "{{base_url}}/purchase/search?purchaseNo=PUR&status=Completed", "host": ["{{base_url}}"], "path": ["purchase", "search"], "query": [{ "key": "purchaseNo", "value": "PUR" }, { "key": "status", "value": "Completed" }] } }
+				},
+				{
+					"name": "Delete Purchase",
+					"request": { "method": "DELETE", "url": { "raw": "{{base_url}}/purchase/delete?id=1", "host": ["{{base_url}}"], "path": ["purchase", "delete"], "query": [{ "key": "id", "value": "1" }] } }
+				}
+			]
+		},
+		{
+			"name": "Sales",
+			"item": [
+				{
+					"name": "Save Sale",
 					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{base_url}}/userLogs/getAll",
-							"host": [
-								"{{base_url}}"
-							],
-							"path": [
-								"userLogs",
-								"getAll"
-							]
-						}
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": {
+							"mode": "raw",
+							"raw": "{\n  \"userId\": 1,\n  \"paymentMethod\": \"Cash\",\n  \"items\": [\n    { \"productId\": 1, \"quantity\": 2, \"unitPrice\": 90.00, \"discountAmount\": 0 },\n    { \"productId\": 2, \"quantity\": 1, \"unitPrice\": 45.00, \"discountAmount\": 5.00 }\n  ]\n}"
+						},
+						"url": { "raw": "{{base_url}}/sales/save", "host": ["{{base_url}}"], "path": ["sales", "save"] }
+					}
+				},
+				{
+					"name": "Update Sale",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": { "mode": "raw", "raw": "{\n  \"id\": 1,\n  \"subtotal\": 220.00,\n  \"totalAmount\": 220.00,\n  \"paymentMethod\": \"Card\",\n  \"status\": \"Completed\"\n}" },
+						"url": { "raw": "{{base_url}}/sales/update", "host": ["{{base_url}}"], "path": ["sales", "update"] }
+					}
+				},
+				{
+					"name": "Get All Sales",
+					"request": { "method": "GET", "url": { "raw": "{{base_url}}/sales/getAll", "host": ["{{base_url}}"], "path": ["sales", "getAll"] } }
+				},
+				{
+					"name": "Get Sale By ID",
+					"request": { "method": "GET", "url": { "raw": "{{base_url}}/sales/getById?id=1", "host": ["{{base_url}}"], "path": ["sales", "getById"], "query": [{ "key": "id", "value": "1" }] } }
+				},
+				{
+					"name": "Search Sales",
+					"request": { "method": "GET", "url": { "raw": "{{base_url}}/sales/search?invoiceNo=INV&status=Completed", "host": ["{{base_url}}"], "path": ["sales", "search"], "query": [{ "key": "invoiceNo", "value": "INV" }, { "key": "status", "value": "Completed" }] } }
+				},
+				{
+					"name": "Delete Sale",
+					"request": { "method": "DELETE", "url": { "raw": "{{base_url}}/sales/delete?id=1", "host": ["{{base_url}}"], "path": ["sales", "delete"], "query": [{ "key": "id", "value": "1" }] } }
+				},
+				{
+					"name": "Sale Return",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": { "mode": "raw", "raw": "{\n  \"saleId\": 1,\n  \"userId\": 1,\n  \"items\": [\n    { \"saleItemId\": 1, \"returnQty\": 1 }\n  ]\n}" },
+						"url": { "raw": "{{base_url}}/sales/return", "host": ["{{base_url}}"], "path": ["sales", "return"] }
+					}
+				},
+				{
+					"name": "Report - Daily",
+					"request": { "method": "GET", "url": { "raw": "{{base_url}}/sales/report/daily?date=2025-02-22", "host": ["{{base_url}}"], "path": ["sales", "report", "daily"], "query": [{ "key": "date", "value": "2025-02-22" }] } }
+				},
+				{
+					"name": "Report - Monthly",
+					"request": { "method": "GET", "url": { "raw": "{{base_url}}/sales/report/monthly?year=2025&month=2", "host": ["{{base_url}}"], "path": ["sales", "report", "monthly"], "query": [{ "key": "year", "value": "2025" }, { "key": "month", "value": "2" }] } }
+				},
+				{
+					"name": "Report - By Category",
+					"request": { "method": "GET", "url": { "raw": "{{base_url}}/sales/report/by-category?fromDate=2025-01-01&toDate=2025-12-31", "host": ["{{base_url}}"], "path": ["sales", "report", "by-category"], "query": [{ "key": "fromDate", "value": "2025-01-01" }, { "key": "toDate", "value": "2025-12-31" }] } }
+				},
+				{
+					"name": "Report - By Supplier",
+					"request": { "method": "GET", "url": { "raw": "{{base_url}}/sales/report/by-supplier?fromDate=2025-01-01&toDate=2025-12-31", "host": ["{{base_url}}"], "path": ["sales", "report", "by-supplier"], "query": [{ "key": "fromDate", "value": "2025-01-01" }, { "key": "toDate", "value": "2025-12-31" }] } }
+				}
+			]
+		},
+		{
+			"name": "Inventory",
+			"item": [
+				{
+					"name": "Save Inventory Transaction",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": { "mode": "raw", "raw": "{\n  \"productId\": 1,\n  \"transactionType\": \"Adjustment\",\n  \"quantity\": 5,\n  \"userId\": 1,\n  \"note\": \"Stock count correction\"\n}" },
+						"url": { "raw": "{{base_url}}/inventory/save", "host": ["{{base_url}}"], "path": ["inventory", "save"] }
+					}
+				},
+				{
+					"name": "Update Inventory Transaction",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": { "mode": "raw", "raw": "{\n  \"id\": 1,\n  \"note\": \"Updated note\"\n}" },
+						"url": { "raw": "{{base_url}}/inventory/update", "host": ["{{base_url}}"], "path": ["inventory", "update"] }
+					}
+				},
+				{
+					"name": "Get All Inventory Transactions",
+					"request": { "method": "GET", "url": { "raw": "{{base_url}}/inventory/getAll", "host": ["{{base_url}}"], "path": ["inventory", "getAll"] } }
+				},
+				{
+					"name": "Get Inventory Transaction By ID",
+					"request": { "method": "GET", "url": { "raw": "{{base_url}}/inventory/getById?id=1", "host": ["{{base_url}}"], "path": ["inventory", "getById"], "query": [{ "key": "id", "value": "1" }] } }
+				},
+				{
+					"name": "Search Inventory Transactions",
+					"request": { "method": "GET", "url": { "raw": "{{base_url}}/inventory/search?productId=1&transactionType=Purchase", "host": ["{{base_url}}"], "path": ["inventory", "search"], "query": [{ "key": "productId", "value": "1" }, { "key": "transactionType", "value": "Purchase" }] } }
+				},
+				{
+					"name": "Delete Inventory Transaction",
+					"request": { "method": "DELETE", "url": { "raw": "{{base_url}}/inventory/delete?id=1", "host": ["{{base_url}}"], "path": ["inventory", "delete"], "query": [{ "key": "id", "value": "1" }] } }
+				},
+				{
+					"name": "Adjust Stock",
+					"request": {
+						"method": "POST",
+						"header": [{ "key": "Content-Type", "value": "application/json" }],
+						"body": { "mode": "raw", "raw": "{\n  \"productId\": 1,\n  \"quantity\": 10,\n  \"userId\": 1,\n  \"note\": \"Manual adjustment - damaged goods\"\n}" },
+						"url": { "raw": "{{base_url}}/inventory/adjust", "host": ["{{base_url}}"], "path": ["inventory", "adjust"] }
 					}
 				}
 			]
-		}
-	],
-	"variable": [
-		{
-			"key": "base_url",
-			"value": "http://localhost:8080",
-			"type": "string"
 		},
 		{
-			"key": "jwt_token",
-			"value": "",
-			"type": "string"
+			"name": "Dashboard",
+			"item": [
+				{
+					"name": "Get Dashboard Summary",
+					"request": { "method": "GET", "url": { "raw": "{{base_url}}/dashboard/summary", "host": ["{{base_url}}"], "path": ["dashboard", "summary"] } }
+				}
+			]
+		},
+		{
+			"name": "Reports",
+			"item": [
+				{
+					"name": "Profit & Loss",
+					"request": { "method": "GET", "url": { "raw": "{{base_url}}/reports/profit-loss?fromDate=2025-01-01&toDate=2025-12-31", "host": ["{{base_url}}"], "path": ["reports", "profit-loss"], "query": [{ "key": "fromDate", "value": "2025-01-01" }, { "key": "toDate", "value": "2025-12-31" }] } }
+				}
+			]
 		}
 	]
 }

@@ -1,64 +1,65 @@
 const { sequelize } = require('../config/database');
 const UserRole = require('./UserRole');
 const User = require('./User');
-const ProductCategory = require('./ProductCategory');
-const Tax = require('./Tax');
-const Product = require('./Product');
-const Customer = require('./Customer');
-const PaymentMethod = require('./PaymentMethod');
-const Transaction = require('./Transaction');
-const TransactionDetailsList = require('./TransactionDetailsList');
-const TransactionPaymentMethod = require('./TransactionPaymentMethod');
-const Supplier = require('./Supplier');
-const Stock = require('./Stock');
 const PasswordResetToken = require('./PasswordResetToken');
 const UserLogs = require('./UserLogs');
+const ProductCategory = require('./ProductCategory');
+const Supplier = require('./Supplier');
+const Product = require('./Product');
+const Purchase = require('./Purchase');
+const PurchaseItem = require('./PurchaseItem');
+const Sale = require('./Sale');
+const SaleItem = require('./SaleItem');
+const InventoryTransaction = require('./InventoryTransaction');
 
-// Define associations
-// UserRole associations
+// User associations
 UserRole.hasMany(User, { foreignKey: 'userRoleId', as: 'users' });
 User.belongsTo(UserRole, { foreignKey: 'userRoleId', as: 'userRole' });
-
-// Product associations
-Product.belongsTo(Tax, { foreignKey: 'tax', as: 'taxInfo' });
-Product.belongsTo(ProductCategory, { foreignKey: 'productCategory', as: 'categoryInfo' });
-
-// Transaction associations
-Transaction.belongsTo(User, { foreignKey: 'userId', as: 'user' });
-Transaction.belongsTo(Customer, { foreignKey: 'customerId', as: 'customer' });
-Transaction.hasMany(TransactionDetailsList, { foreignKey: 'transactionId', as: 'transactionDetailsList' });
-Transaction.hasMany(TransactionPaymentMethod, { foreignKey: 'transactionId', as: 'transactionPaymentMethod' });
-
-TransactionDetailsList.belongsTo(Transaction, { foreignKey: 'transactionId', as: 'transaction' });
-TransactionDetailsList.belongsTo(Product, { foreignKey: 'productId', as: 'product' });
-
-TransactionPaymentMethod.belongsTo(Transaction, { foreignKey: 'transactionId', as: 'transaction' });
-TransactionPaymentMethod.belongsTo(PaymentMethod, { foreignKey: 'paymentMethodId', as: 'paymentMethod' });
-
-// Stock associations
-Stock.belongsTo(Product, { foreignKey: 'productId', as: 'product' });
-Stock.belongsTo(Supplier, { foreignKey: 'supplierId', as: 'supplier' });
-
-// PasswordResetToken associations
 PasswordResetToken.belongsTo(User, { foreignKey: 'userId', as: 'user' });
-
-// UserLogs associations
 UserLogs.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+
+// Product category & product
+ProductCategory.hasMany(Product, { foreignKey: 'categoryId', as: 'products' });
+Product.belongsTo(ProductCategory, { foreignKey: 'categoryId', as: 'category' });
+Supplier.hasMany(Product, { foreignKey: 'supplierId', as: 'products' });
+Product.belongsTo(Supplier, { foreignKey: 'supplierId', as: 'supplier' });
+
+// Purchase
+Supplier.hasMany(Purchase, { foreignKey: 'supplierId', as: 'purchases' });
+Purchase.belongsTo(Supplier, { foreignKey: 'supplierId', as: 'supplier' });
+User.hasMany(Purchase, { foreignKey: 'userId', as: 'purchases' });
+Purchase.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+Purchase.hasMany(PurchaseItem, { foreignKey: 'purchaseId', as: 'items' });
+PurchaseItem.belongsTo(Purchase, { foreignKey: 'purchaseId', as: 'purchase' });
+PurchaseItem.belongsTo(Product, { foreignKey: 'productId', as: 'product' });
+Product.hasMany(PurchaseItem, { foreignKey: 'productId', as: 'purchaseItems' });
+
+// Sale
+User.hasMany(Sale, { foreignKey: 'userId', as: 'sales' });
+Sale.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+Sale.hasMany(SaleItem, { foreignKey: 'saleId', as: 'items' });
+SaleItem.belongsTo(Sale, { foreignKey: 'saleId', as: 'sale' });
+SaleItem.belongsTo(Product, { foreignKey: 'productId', as: 'product' });
+Product.hasMany(SaleItem, { foreignKey: 'productId', as: 'saleItems' });
+
+// Inventory
+Product.hasMany(InventoryTransaction, { foreignKey: 'productId', as: 'inventoryTransactions' });
+InventoryTransaction.belongsTo(Product, { foreignKey: 'productId', as: 'product' });
+User.hasMany(InventoryTransaction, { foreignKey: 'userId', as: 'inventoryTransactions' });
+InventoryTransaction.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
 module.exports = {
   sequelize,
   UserRole,
   User,
-  ProductCategory,
-  Tax,
-  Product,
-  Customer,
-  PaymentMethod,
-  Transaction,
-  TransactionDetailsList,
-  TransactionPaymentMethod,
-  Supplier,
-  Stock,
   PasswordResetToken,
-  UserLogs
+  UserLogs,
+  ProductCategory,
+  Supplier,
+  Product,
+  Purchase,
+  PurchaseItem,
+  Sale,
+  SaleItem,
+  InventoryTransaction
 };

@@ -1,361 +1,182 @@
 const { Op } = require('sequelize');
-const { Product, Tax, ProductCategory } = require('../models');
+const { Product, ProductCategory, Supplier } = require('../models');
 const logger = require('../config/logger');
 
-class ProductService {
-  /**
-   * Save a new product
-   */
-  async save(productDto) {
-    logger.info('ProductService.save() invoked');
-    
-    const product = await Product.create({
-      name: productDto.name,
-      barcode: productDto.barcode,
-      pricePerUnit: productDto.pricePerUnit,
-      tax: productDto.taxDto?.id || productDto.tax,
-      productCategory: productDto.productCategoryDto?.id || productDto.productCategory,
-      quantity: productDto.quantity || 0,
-      lowStock: productDto.lowStock || 0,
-      purchasePrice: productDto.purchasePrice,
-      discountValidation: productDto.discountValidation !== undefined ? productDto.discountValidation : false,
-      isActive: productDto.isActive !== undefined ? productDto.isActive : true,
-      createdDate: new Date()
-    });
-
-    const productWithAssociations = await Product.findByPk(product.id, {
-      include: [
-        { model: Tax, as: 'taxInfo' },
-        { model: ProductCategory, as: 'categoryInfo' }
-      ]
-    });
-
-    return this.transformToDto(productWithAssociations);
-  }
-
-  /**
-   * Get all products with pagination
-   */
-  async getAll(pageNumber, pageSize, searchParams, status) {
-    logger.info('ProductService.getAll() invoked');
-    
-    const where = {};
-    if (status !== undefined && status !== null) {
-      where.isActive = status;
-    }
-
-    // Exclude "Non Scan" and "Custom" categories
-    const categoryExclude = await ProductCategory.findAll({
-      where: {
-        productCategoryName: {
-          [Op.in]: ['Non Scan', 'Custom']
-        }
-      }
-    });
-    const excludeIds = categoryExclude.map(cat => cat.id);
-
-    if (excludeIds.length > 0) {
-      where.productCategory = {
-        [Op.notIn]: excludeIds
-      };
-    }
-
-    // Apply search filters
-    if (searchParams) {
-      if (searchParams.name) {
-        where.name = { [Op.like]: `%${searchParams.name}%` };
-      }
-      if (searchParams.barcode) {
-        where.barcode = { [Op.like]: `%${searchParams.barcode}%` };
-      }
-    }
-
-    const offset = (pageNumber - 1) * pageSize;
-    const limit = pageSize === 0 ? null : pageSize;
-    
-    const { count, rows } = await Product.findAndCountAll({
-      where,
-      include: [
-        { model: Tax, as: 'taxInfo' },
-        { model: ProductCategory, as: 'categoryInfo' }
-      ],
-      limit: limit,
-      offset: offset,
-      order: [['id', 'DESC']]
-    });
-
-    const products = rows.map(product => this.transformToDto(product));
-
-    return {
-      content: products,
-      totalElements: count,
-      totalPages: Math.ceil(count / (pageSize || count)),
-      pageNumber: pageNumber,
-      pageSize: pageSize || count
-    };
-  }
-
-  /**
-   * Get all products (no pagination)
-   */
-  async getAllProducts() {
-    logger.info('ProductService.getAllProducts() invoked');
-    
-    const products = await Product.findAll({
-      where: { isActive: true },
-      include: [
-        { model: Tax, as: 'taxInfo' },
-        { model: ProductCategory, as: 'categoryInfo' }
-      ],
-      order: [['id', 'DESC']]
-    });
-
-    return products.map(product => this.transformToDto(product));
-  }
-
-  /**
-   * Get product by barcode
-   */
-  async getProductByBarcode(barcode) {
-    logger.info('ProductService.getProductByBarcode() invoked');
-    
-    const products = await Product.findAll({
-      where: { barcode, isActive: true },
-      include: [
-        { model: Tax, as: 'taxInfo' },
-        { model: ProductCategory, as: 'categoryInfo' }
-      ]
-    });
-
-    return products.map(product => this.transformToDto(product));
-  }
-
-  /**
-   * Get product by name
-   */
-  async getProductByName(name) {
-    logger.info('ProductService.getProductByName() invoked');
-    
-    const products = await Product.findAll({
-      where: { 
-        name: { [Op.like]: `%${name}%` },
-        isActive: true 
-      },
-      include: [
-        { model: Tax, as: 'taxInfo' },
-        { model: ProductCategory, as: 'categoryInfo' }
-      ]
-    });
-
-    return products.map(product => this.transformToDto(product));
-  }
-
-  /**
-   * Get product by ID
-   */
-  async getProductById(id) {
-    logger.info('ProductService.getProductById() invoked');
-    
-    const product = await Product.findByPk(id, {
-      include: [
-        { model: Tax, as: 'taxInfo' },
-        { model: ProductCategory, as: 'categoryInfo' }
-      ]
-    });
-
-    return product ? [this.transformToDto(product)] : [];
-  }
-
-  /**
-   * Update product
-   */
-  async updateProduct(productDto) {
-    logger.info('ProductService.updateProduct() invoked');
-    
-    const product = await Product.findByPk(productDto.id);
-    if (!product) {
-      throw new Error('Product not found');
-    }
-
-    await product.update({
-      name: productDto.name,
-      barcode: productDto.barcode,
-      pricePerUnit: productDto.pricePerUnit,
-      tax: productDto.taxDto?.id || productDto.tax || product.tax,
-      productCategory: productDto.productCategoryDto?.id || productDto.productCategory || product.productCategory,
-      quantity: productDto.quantity !== undefined ? productDto.quantity : product.quantity,
-      lowStock: productDto.lowStock !== undefined ? productDto.lowStock : product.lowStock,
-      purchasePrice: productDto.purchasePrice !== undefined ? productDto.purchasePrice : product.purchasePrice,
-      discountValidation: productDto.discountValidation !== undefined ? productDto.discountValidation : product.discountValidation
-    });
-
-    const updatedProduct = await Product.findByPk(product.id, {
-      include: [
-        { model: Tax, as: 'taxInfo' },
-        { model: ProductCategory, as: 'categoryInfo' }
-      ]
-    });
-
-    return this.transformToDto(updatedProduct);
-  }
-
-  /**
-   * Update product status
-   */
-  async updateProductStatus(productId, status) {
-    logger.info('ProductService.updateProductStatus() invoked');
-    
-    const product = await Product.findByPk(productId);
-    if (!product) {
-      return null;
-    }
-
-    await product.update({ isActive: status });
-
-    const updatedProduct = await Product.findByPk(productId, {
-      include: [
-        { model: Tax, as: 'taxInfo' },
-        { model: ProductCategory, as: 'categoryInfo' }
-      ]
-    });
-
-    return this.transformToDto(updatedProduct);
-  }
-
-  /**
-   * Get products by category name
-   */
-  async getByProductCategoryName(pageNumber, pageSize, searchParams, categoryName, status) {
-    logger.info('ProductService.getByProductCategoryName() invoked');
-    
-    const category = await ProductCategory.findOne({ 
-      where: { productCategoryName: categoryName } 
-    });
-    
-    if (!category) {
-      return {
-        content: [],
-        totalElements: 0,
-        totalPages: 0,
-        pageNumber: pageNumber,
-        pageSize: pageSize
-      };
-    }
-
-    const where = { 
-      productCategory: category.id 
-    };
-    
-    if (status !== undefined && status !== null) {
-      where.isActive = status;
-    }
-
-    const offset = (pageNumber - 1) * pageSize;
-    
-    const { count, rows } = await Product.findAndCountAll({
-      where,
-      include: [
-        { model: Tax, as: 'taxInfo' },
-        { model: ProductCategory, as: 'categoryInfo' }
-      ],
-      limit: pageSize,
-      offset: offset,
-      order: [['id', 'DESC']]
-    });
-
-    const products = rows.map(product => this.transformToDto(product));
-
-    return {
-      content: products,
-      totalElements: count,
-      totalPages: Math.ceil(count / pageSize),
-      pageNumber: pageNumber,
-      pageSize: pageSize
-    };
-  }
-
-  /**
-   * Get products by tax percentage
-   */
-  async getByTaxPercentage(pageNumber, pageSize, searchParams, taxPercentage, status) {
-    logger.info('ProductService.getByTaxPercentage() invoked');
-    
-    const tax = await Tax.findOne({ 
-      where: { taxPercentage } 
-    });
-    
-    if (!tax) {
-      return {
-        content: [],
-        totalElements: 0,
-        totalPages: 0,
-        pageNumber: pageNumber,
-        pageSize: pageSize
-      };
-    }
-
-    const where = { 
-      tax: tax.id 
-    };
-    
-    if (status !== undefined && status !== null) {
-      where.isActive = status;
-    }
-
-    const offset = (pageNumber - 1) * pageSize;
-    
-    const { count, rows } = await Product.findAndCountAll({
-      where,
-      include: [
-        { model: Tax, as: 'taxInfo' },
-        { model: ProductCategory, as: 'categoryInfo' }
-      ],
-      limit: pageSize,
-      offset: offset,
-      order: [['id', 'DESC']]
-    });
-
-    const products = rows.map(product => this.transformToDto(product));
-
-    return {
-      content: products,
-      totalElements: count,
-      totalPages: Math.ceil(count / pageSize),
-      pageNumber: pageNumber,
-      pageSize: pageSize
-    };
-  }
-
-  /**
-   * Transform product model to DTO
-   */
-  transformToDto(product) {
-    if (!product) return null;
-    
-    return {
-      id: product.id,
-      name: product.name,
-      barcode: product.barcode,
-      pricePerUnit: product.pricePerUnit,
-      createdDate: product.createdDate,
-      isActive: product.isActive,
-      quantity: product.quantity,
-      lowStock: product.lowStock,
-      purchasePrice: product.purchasePrice,
-      discountValidation: product.discountValidation,
-      taxDto: product.taxInfo ? {
-        id: product.taxInfo.id,
-        taxPercentage: product.taxInfo.taxPercentage,
-        isActive: product.taxInfo.isActive
-      } : null,
-      productCategoryDto: product.categoryInfo ? {
-        id: product.categoryInfo.id,
-        productCategoryName: product.categoryInfo.productCategoryName,
-        isActive: product.categoryInfo.isActive,
-        agevalidation: product.categoryInfo.agevalidation
-      } : null
-    };
-  }
+/** Compute selling price from cost price and discount percentage: sellingPrice = costPrice * (1 - discountPercentage/100) */
+function computeSellingPrice(costPrice, discountPercentage = 0) {
+  const cost = Number(costPrice);
+  const discount = Number(discountPercentage) || 0;
+  const selling = cost * (1 - discount / 100);
+  return Math.round(selling * 100) / 100;
 }
 
-module.exports = new ProductService();
+function toDto(row) {
+  if (!row) return null;
+  const dto = {
+    id: row.id,
+    barCode: row.barCode,
+    productName: row.productName,
+    categoryId: row.categoryId,
+    supplierId: row.supplierId,
+    costPrice: row.costPrice != null ? Number(row.costPrice) : null,
+    sellingPrice: row.sellingPrice != null ? Number(row.sellingPrice) : null,
+    discountPercentage: row.discountPercentage != null ? Number(row.discountPercentage) : 0,
+    stockQty: row.stockQty,
+    minStockLevel: row.minStockLevel,
+    unit: row.unit || 'pcs',
+    isActive: row.isActive,
+    createdAt: row.createdAt,
+    updatedAt: row.updatedAt
+  };
+  if (row.category) {
+    dto.category = { id: row.category.id, categoryName: row.category.categoryName };
+  }
+  if (row.supplier) {
+    dto.supplier = { id: row.supplier.id, supplierName: row.supplier.supplierName };
+  }
+  return dto;
+}
+
+const includeAssoc = [
+  { model: ProductCategory, as: 'category', attributes: ['id', 'categoryName'] },
+  { model: Supplier, as: 'supplier', attributes: ['id', 'supplierName'], required: false }
+];
+
+async function save(body) {
+  logger.info('ProductService.save() invoked');
+  const costPrice = Number(body.costPrice);
+  const discountPercentage = Number(body.discountPercentage) || 0;
+  const sellingPrice = body.sellingPrice != null ? Number(body.sellingPrice) : computeSellingPrice(costPrice, discountPercentage);
+  const product = await Product.create({
+    barCode: body.barCode || null,
+    productName: body.productName,
+    categoryId: body.categoryId,
+    supplierId: body.supplierId || null,
+    costPrice,
+    sellingPrice,
+    discountPercentage,
+    stockQty: body.stockQty ?? 0,
+    minStockLevel: body.minStockLevel ?? 0,
+    unit: body.unit || 'pcs',
+    isActive: body.isActive !== undefined ? body.isActive : true
+  });
+  const withAssoc = await Product.findByPk(product.id, { include: includeAssoc });
+  return toDto(withAssoc);
+}
+
+async function update(body) {
+  logger.info('ProductService.update() invoked');
+  const product = await Product.findByPk(body.id);
+  if (!product) throw new Error('Product not found');
+  const costPrice = body.costPrice != null ? Number(body.costPrice) : Number(product.costPrice);
+  const discountPercentage = body.discountPercentage != null ? Number(body.discountPercentage) : Number(product.discountPercentage);
+  const sellingPrice = body.sellingPrice != null ? Number(body.sellingPrice) : computeSellingPrice(costPrice, discountPercentage);
+  await product.update({
+    barCode: body.barCode !== undefined ? body.barCode : product.barCode,
+    productName: body.productName ?? product.productName,
+    categoryId: body.categoryId ?? product.categoryId,
+    supplierId: body.supplierId !== undefined ? body.supplierId : product.supplierId,
+    costPrice,
+    sellingPrice,
+    discountPercentage,
+    stockQty: body.stockQty !== undefined ? body.stockQty : product.stockQty,
+    minStockLevel: body.minStockLevel !== undefined ? body.minStockLevel : product.minStockLevel,
+    unit: body.unit ?? product.unit,
+    isActive: body.isActive !== undefined ? body.isActive : product.isActive
+  });
+  const withAssoc = await Product.findByPk(product.id, { include: includeAssoc });
+  return toDto(withAssoc);
+}
+
+async function getAll() {
+  logger.info('ProductService.getAll() invoked');
+  const list = await Product.findAll({ include: includeAssoc, order: [['productName', 'ASC']] });
+  return list.map(toDto);
+}
+
+async function getAllPaginated(pageNumber = 1, pageSize = 10, filters = {}) {
+  logger.info('ProductService.getAllPaginated() invoked');
+  const where = {};
+  if (filters.isActive !== undefined && filters.isActive !== '') {
+    where.isActive = filters.isActive === 'true' || filters.isActive === true;
+  }
+  if (filters.productName) where.productName = { [Op.like]: `%${filters.productName}%` };
+  if (filters.barCode) where.barCode = { [Op.like]: `%${filters.barCode}%` };
+  if (filters.categoryId) where.categoryId = filters.categoryId;
+  if (filters.supplierId) where.supplierId = filters.supplierId;
+  const offset = (pageNumber - 1) * pageSize;
+  const { count, rows } = await Product.findAndCountAll({
+    where,
+    include: includeAssoc,
+    limit: pageSize,
+    offset,
+    order: [['productName', 'ASC']]
+  });
+  return {
+    content: rows.map(toDto),
+    totalElements: count,
+    totalPages: Math.ceil(count / pageSize),
+    pageNumber,
+    pageSize
+  };
+}
+
+async function getById(id) {
+  logger.info('ProductService.getById() invoked');
+  const product = await Product.findByPk(id, { include: includeAssoc });
+  return toDto(product);
+}
+
+async function search(query) {
+  logger.info('ProductService.search() invoked');
+  const where = {};
+  if (query.productName) where.productName = { [Op.like]: `%${query.productName}%` };
+  if (query.barCode) where.barCode = { [Op.like]: `%${query.barCode}%` };
+  if (query.categoryId) where.categoryId = query.categoryId;
+  if (query.supplierId) where.supplierId = query.supplierId;
+  if (query.isActive !== undefined && query.isActive !== '') {
+    where.isActive = query.isActive === 'true' || query.isActive === true;
+  }
+  const list = await Product.findAll({ where, include: includeAssoc, order: [['productName', 'ASC']] });
+  return list.map(toDto);
+}
+
+async function getByCategory(categoryId) {
+  logger.info('ProductService.getByCategory() invoked');
+  const list = await Product.findAll({
+    where: { categoryId },
+    include: includeAssoc,
+    order: [['productName', 'ASC']]
+  });
+  return list.map(toDto);
+}
+
+async function getByPrice(minPrice, maxPrice) {
+  logger.info('ProductService.getByPrice() invoked');
+  const where = {};
+  if (minPrice != null) where.sellingPrice = { ...where.sellingPrice, [Op.gte]: Number(minPrice) };
+  if (maxPrice != null) where.sellingPrice = { ...where.sellingPrice, [Op.lte]: Number(maxPrice) };
+  const list = await Product.findAll({ where, include: includeAssoc, order: [['sellingPrice', 'ASC']] });
+  return list.map(toDto);
+}
+
+async function deleteById(id) {
+  logger.info('ProductService.deleteById() invoked');
+  const product = await Product.findByPk(id);
+  if (!product) throw new Error('Product not found');
+  await product.destroy();
+  return { id };
+}
+
+module.exports = {
+  save,
+  update,
+  getAll,
+  getAllPaginated,
+  getById,
+  search,
+  getByCategory,
+  getByPrice,
+  deleteById,
+  computeSellingPrice
+};
