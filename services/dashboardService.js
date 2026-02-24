@@ -16,6 +16,7 @@ async function getSummary() {
     Product.findAll({ where: { isActive: true }, attributes: ['stockQty', 'minStockLevel'] })
   ]);
 
+  // Low stock = product quantity <= low stock threshold
   const lowStockCount = products.filter(p => (p.stockQty || 0) <= (p.minStockLevel || 0)).length;
   const totalSales = totalSalesResult != null ? Number(totalSalesResult) : 0;
   const totalPurchases = totalPurchasesResult != null ? Number(totalPurchasesResult) : 0;

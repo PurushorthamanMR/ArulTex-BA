@@ -361,6 +361,44 @@
 					"request": { "method": "GET", "url": { "raw": "{{base_url}}/product/getByCategory?categoryId=1", "host": ["{{base_url}}"], "path": ["product", "getByCategory"], "query": [{ "key": "categoryId", "value": "1" }] } }
 				},
 				{
+					"name": "Get Products By Category (Paginated)",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/product/getByCategoryPaginated?categoryId=1&pageNumber=1&pageSize=10",
+							"host": ["{{base_url}}"],
+							"path": ["product", "getByCategoryPaginated"],
+							"query": [
+								{ "key": "categoryId", "value": "1" },
+								{ "key": "pageNumber", "value": "1" },
+								{ "key": "pageSize", "value": "10" },
+								{ "key": "productName", "value": "", "disabled": true }
+							]
+						}
+					}
+				},
+				{
+					"name": "Get Low Stock Products",
+					"request": { "method": "GET", "url": { "raw": "{{base_url}}/product/getLowStock?activeOnly=true", "host": ["{{base_url}}"], "path": ["product", "getLowStock"], "query": [{ "key": "activeOnly", "value": "true" }] } }
+				},
+				{
+					"name": "Get Low Stock Products (Paginated)",
+					"request": {
+						"method": "GET",
+						"url": {
+							"raw": "{{base_url}}/product/getLowStockPaginated?pageNumber=1&pageSize=10",
+							"host": ["{{base_url}}"],
+							"path": ["product", "getLowStockPaginated"],
+							"query": [
+								{ "key": "pageNumber", "value": "1" },
+								{ "key": "pageSize", "value": "10" },
+								{ "key": "categoryId", "value": "", "disabled": true },
+								{ "key": "productName", "value": "", "disabled": true }
+							]
+						}
+					}
+				},
+				{
 					"name": "Get Products By Price",
 					"request": { "method": "GET", "url": { "raw": "{{base_url}}/product/getByPrice?minPrice=10&maxPrice=500", "host": ["{{base_url}}"], "path": ["product", "getByPrice"], "query": [{ "key": "minPrice", "value": "10" }, { "key": "maxPrice", "value": "500" }] } }
 				},
@@ -552,5 +590,9 @@
 				}
 			]
 		}
+	],
+	"variable": [
+		{ "key": "base_url", "value": "http://localhost:8080", "type": "string" },
+		{ "key": "jwt_token", "value": "", "type": "string" }
 	]
 }

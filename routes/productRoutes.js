@@ -79,6 +79,42 @@ router.get('/getByCategory', authenticateToken, async (req, res) => {
   }
 });
 
+router.get('/getByCategoryPaginated', authenticateToken, async (req, res) => {
+  try {
+    const categoryId = parseInt(req.query.categoryId);
+    const pageNumber = parseInt(req.query.pageNumber) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 10;
+    const result = await productService.getByCategoryPaginated(categoryId, pageNumber, pageSize, req.query);
+    res.json(responseUtil.getServiceResponse(result));
+  } catch (error) {
+    logger.error('Error getting products by category (paginated):', error);
+    res.status(500).json(responseUtil.getErrorServiceResponse('Error retrieving products', 500));
+  }
+});
+
+router.get('/getLowStock', authenticateToken, async (req, res) => {
+  try {
+    const activeOnly = req.query.activeOnly !== 'false';
+    const list = await productService.getLowStock(activeOnly);
+    res.json(responseUtil.getServiceResponse(list));
+  } catch (error) {
+    logger.error('Error getting low-stock products:', error);
+    res.status(500).json(responseUtil.getErrorServiceResponse('Error retrieving low-stock products', 500));
+  }
+});
+
+router.get('/getLowStockPaginated', authenticateToken, async (req, res) => {
+  try {
+    const pageNumber = parseInt(req.query.pageNumber) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 10;
+    const result = await productService.getLowStockPaginated(pageNumber, pageSize, req.query);
+    res.json(responseUtil.getServiceResponse(result));
+  } catch (error) {
+    logger.error('Error getting low-stock products (paginated):', error);
+    res.status(500).json(responseUtil.getErrorServiceResponse('Error retrieving low-stock products', 500));
+  }
+});
+
 router.get('/getByPrice', authenticateToken, async (req, res) => {
   try {
     const minPrice = req.query.minPrice != null ? parseFloat(req.query.minPrice) : null;
