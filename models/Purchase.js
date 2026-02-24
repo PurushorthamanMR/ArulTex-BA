@@ -45,6 +45,7 @@ const Purchase = sequelize.define('Purchase', {
   }
 }, {
   tableName: 'purchases',
+  freezeTableName: true,
   timestamps: true,
   createdAt: 'createdAt',
   updatedAt: false

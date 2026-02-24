@@ -1,5 +1,5 @@
 const { Op } = require('sequelize');
-const { Sale, SaleItem, Product, User, ProductCategory, Supplier } = require('../models');
+const { Sale, SaleItem, Product, User, ProductCategory, Supplier, sequelize } = require('../models');
 const { recordInventoryChange } = require('./inventoryHelper');
 const logger = require('../config/logger');
 
@@ -246,6 +246,81 @@ async function reportBySupplier(fromDate, toDate) {
   return Object.values(bySup);
 }
 
+async function reportYearly(year) {
+  const y = parseInt(year) || new Date().getFullYear();
+  const start = new Date(y, 0, 1);
+  const end = new Date(y + 1, 0, 1);
+  const list = await Sale.findAll({
+    where: { saleDate: { [Op.gte]: start, [Op.lt]: end }, status: ['Completed', 'Refunded'] },
+    attributes: ['id', 'invoiceNo', 'totalAmount', 'saleDate', 'status']
+  });
+  const totalSales = list.filter(s => s.status === 'Completed').reduce((sum, s) => sum + Number(s.totalAmount), 0);
+  return { year: y, count: list.length, totalSales, sales: list.map(s => ({ id: s.id, invoiceNo: s.invoiceNo, totalAmount: s.totalAmount, saleDate: s.saleDate })) };
+}
+
+async function reportTrend() {
+  const now = new Date();
+
+  // 1. Last 30 days trend
+  const thirtyDaysAgo = new Date();
+  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 29);
+  thirtyDaysAgo.setHours(0, 0, 0, 0);
+
+  const dailySales = await Sale.findAll({
+    where: {
+      saleDate: { [Op.gte]: thirtyDaysAgo },
+      status: 'Completed'
+    },
+    attributes: [
+      [sequelize.fn('DATE', sequelize.col('saleDate')), 'date'],
+      [sequelize.fn('SUM', sequelize.col('totalAmount')), 'totalAmount']
+    ],
+    group: [sequelize.fn('DATE', sequelize.col('saleDate'))],
+    order: [[sequelize.fn('DATE', sequelize.col('saleDate')), 'ASC']]
+  });
+
+  // 2. Last 12 months trend
+  const twelveMonthsAgo = new Date();
+  twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 11);
+  twelveMonthsAgo.setDate(1);
+  twelveMonthsAgo.setHours(0, 0, 0, 0);
+
+  const monthlySales = await Sale.findAll({
+    where: {
+      saleDate: { [Op.gte]: twelveMonthsAgo },
+      status: 'Completed'
+    },
+    attributes: [
+      [sequelize.fn('MONTH', sequelize.col('saleDate')), 'month'],
+      [sequelize.fn('YEAR', sequelize.col('saleDate')), 'year'],
+      [sequelize.fn('SUM', sequelize.col('totalAmount')), 'totalAmount']
+    ],
+    group: [sequelize.fn('YEAR', sequelize.col('saleDate')), sequelize.fn('MONTH', sequelize.col('saleDate'))],
+    order: [[sequelize.fn('YEAR', sequelize.col('saleDate')), 'ASC'], [sequelize.fn('MONTH', sequelize.col('saleDate')), 'ASC']]
+  });
+
+  // 3. Yearly trend (Last 5 years)
+  const fiveYearsAgo = new Date();
+  fiveYearsAgo.setFullYear(fiveYearsAgo.getFullYear() - 4);
+  fiveYearsAgo.setMonth(0);
+  fiveYearsAgo.setDate(1);
+
+  const yearlySales = await Sale.findAll({
+    where: {
+      saleDate: { [Op.gte]: fiveYearsAgo },
+      status: 'Completed'
+    },
+    attributes: [
+      [sequelize.fn('YEAR', sequelize.col('saleDate')), 'year'],
+      [sequelize.fn('SUM', sequelize.col('totalAmount')), 'totalAmount']
+    ],
+    group: [sequelize.fn('YEAR', sequelize.col('saleDate'))],
+    order: [[sequelize.fn('YEAR', sequelize.col('saleDate')), 'ASC']]
+  });
+
+  return { daily: dailySales, monthly: monthlySales, yearly: yearlySales };
+}
+
 module.exports = {
   save,
   update,
@@ -256,6 +331,8 @@ module.exports = {
   processReturn,
   reportDaily,
   reportMonthly,
+  reportYearly,
+  reportTrend,
   reportByCategory,
   reportBySupplier
 };

@@ -117,4 +117,24 @@ router.get('/report/by-supplier', authenticateToken, async (req, res) => {
   }
 });
 
+router.get('/report/yearly', authenticateToken, async (req, res) => {
+  try {
+    const result = await saleService.reportYearly(req.query.year);
+    res.json(responseUtil.getServiceResponse(result));
+  } catch (error) {
+    logger.error('Error getting yearly report:', error);
+    res.status(500).json(responseUtil.getErrorServiceResponse('Error retrieving yearly report', 500));
+  }
+});
+
+router.get('/report/trends', authenticateToken, async (req, res) => {
+  try {
+    const result = await saleService.reportTrend();
+    res.json(responseUtil.getServiceResponse(result));
+  } catch (error) {
+    logger.error('Error getting trends report:', error);
+    res.status(500).json(responseUtil.getErrorServiceResponse('Error retrieving trends report', 500));
+  }
+});
+
 module.exports = router;

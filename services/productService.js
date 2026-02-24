@@ -1,4 +1,5 @@
 const { Op } = require('sequelize');
+const { sequelize } = require('../config/database');
 const { Product, ProductCategory, Supplier } = require('../models');
 const logger = require('../config/logger');
 
@@ -160,6 +161,78 @@ async function getByPrice(minPrice, maxPrice) {
   return list.map(toDto);
 }
 
+/** Low stock = product quantity <= low stock threshold (stockQty <= minStockLevel). Nulls treated as 0. */
+async function getLowStock(activeOnly = true) {
+  logger.info('ProductService.getLowStock() invoked');
+  const lowStockCondition = sequelize.literal('(COALESCE(stockQty, 0) <= COALESCE(minStockLevel, 0))');
+  const where = activeOnly
+    ? { [Op.and]: [lowStockCondition, { isActive: true }] }
+    : { [Op.and]: [lowStockCondition] };
+  const list = await Product.findAll({
+    where,
+    include: includeAssoc,
+    order: [['stockQty', 'ASC'], ['productName', 'ASC']]
+  });
+  return list.map(toDto);
+}
+
+/** Paginated low-stock products: quantity <= low stock threshold (COALESCE(stockQty,0) <= COALESCE(minStockLevel,0)). */
+async function getLowStockPaginated(pageNumber = 1, pageSize = 10, filters = {}) {
+  logger.info('ProductService.getLowStockPaginated() invoked');
+  const where = {
+    [Op.and]: [sequelize.literal('(COALESCE(stockQty, 0) <= COALESCE(minStockLevel, 0))')]
+  };
+  if (filters.isActive !== undefined && filters.isActive !== '') {
+    where.isActive = filters.isActive === 'true' || filters.isActive === true;
+  } else {
+    where.isActive = true;
+  }
+  if (filters.productName) where.productName = { [Op.like]: `%${filters.productName}%` };
+  if (filters.categoryId) where.categoryId = filters.categoryId;
+  const offset = (pageNumber - 1) * pageSize;
+  const { count, rows } = await Product.findAndCountAll({
+    where,
+    include: includeAssoc,
+    limit: pageSize,
+    offset,
+    order: [['stockQty', 'ASC'], ['productName', 'ASC']]
+  });
+  return {
+    content: rows.map(toDto),
+    totalElements: count,
+    totalPages: Math.ceil(count / pageSize),
+    pageNumber,
+    pageSize
+  };
+}
+
+/** Paginated products by category (for category product pages). */
+async function getByCategoryPaginated(categoryId, pageNumber = 1, pageSize = 10, filters = {}) {
+  logger.info('ProductService.getByCategoryPaginated() invoked');
+  const where = { categoryId };
+  if (filters.isActive !== undefined && filters.isActive !== '') {
+    where.isActive = filters.isActive === 'true' || filters.isActive === true;
+  }
+  if (filters.productName) where.productName = { [Op.like]: `%${filters.productName}%` };
+  if (filters.barCode) where.barCode = { [Op.like]: `%${filters.barCode}%` };
+  const offset = (pageNumber - 1) * pageSize;
+  const { count, rows } = await Product.findAndCountAll({
+    where,
+    include: includeAssoc,
+    limit: pageSize,
+    offset,
+    order: [['productName', 'ASC']]
+  });
+  return {
+    content: rows.map(toDto),
+    totalElements: count,
+    totalPages: Math.ceil(count / pageSize),
+    pageNumber,
+    pageSize,
+    categoryId
+  };
+}
+
 async function deleteById(id) {
   logger.info('ProductService.deleteById() invoked');
   const product = await Product.findByPk(id);
@@ -176,7 +249,10 @@ module.exports = {
   getById,
   search,
   getByCategory,
+  getByCategoryPaginated,
   getByPrice,
+  getLowStock,
+  getLowStockPaginated,
   deleteById,
   computeSellingPrice
 };
