@@ -137,4 +137,35 @@ router.get('/report/trends', authenticateToken, async (req, res) => {
   }
 });
 
+router.get('/report/top-products', authenticateToken, async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 10;
+    const result = await saleService.reportTopProducts(limit);
+    res.json(responseUtil.getServiceResponse(result));
+  } catch (error) {
+    logger.error('Error getting top products report:', error);
+    res.status(500).json(responseUtil.getErrorServiceResponse('Error retrieving top products', 500));
+  }
+});
+
+router.get('/report/profitability', authenticateToken, async (req, res) => {
+  try {
+    const result = await saleService.reportProfitability();
+    res.json(responseUtil.getServiceResponse(result));
+  } catch (error) {
+    logger.error('Error getting profitability report:', error);
+    res.status(500).json(responseUtil.getErrorServiceResponse('Error retrieving profitability', 500));
+  }
+});
+
+router.get('/report/low-stock', authenticateToken, async (req, res) => {
+  try {
+    const result = await saleService.getLowStock();
+    res.json(responseUtil.getServiceResponse(result));
+  } catch (error) {
+    logger.error('Error getting low stock report:', error);
+    res.status(500).json(responseUtil.getErrorServiceResponse('Error retrieving low stock', 500));
+  }
+});
+
 module.exports = router;

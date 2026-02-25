@@ -318,7 +318,89 @@ async function reportTrend() {
     order: [[sequelize.fn('YEAR', sequelize.col('saleDate')), 'ASC']]
   });
 
-  return { daily: dailySales, monthly: monthlySales, yearly: yearlySales };
+  return {
+    daily: dailySales.map(d => ({
+      date: d.getDataValue('date'),
+      totalAmount: Number(d.getDataValue('totalAmount'))
+    })),
+    monthly: monthlySales.map(m => ({
+      month: Number(m.getDataValue('month')),
+      year: Number(m.getDataValue('year')),
+      totalAmount: Number(m.getDataValue('totalAmount'))
+    })),
+    yearly: yearlySales.map(y => ({
+      year: Number(y.getDataValue('year')),
+      totalAmount: Number(y.getDataValue('totalAmount'))
+    }))
+  };
+}
+
+async function reportTopProducts(limit = 10) {
+  logger.info('SaleService.reportTopProducts() invoked');
+  const topProducts = await SaleItem.findAll({
+    attributes: [
+      'productId',
+      [sequelize.fn('SUM', sequelize.col('SaleItem.quantity')), 'totalQty'],
+      [sequelize.fn('SUM', sequelize.col('SaleItem.totalPrice')), 'totalRevenue']
+    ],
+    include: [{ model: Product, as: 'product', attributes: ['id', 'productName'] }],
+    group: ['SaleItem.productId', 'product.id', 'product.productName'],
+    order: [[sequelize.literal('totalQty'), 'DESC']],
+    limit: limit,
+    subQuery: false
+  });
+  return topProducts.map(tp => ({
+    productId: tp.productId,
+    totalQty: Number(tp.getDataValue('totalQty')),
+    totalRevenue: Number(tp.getDataValue('totalRevenue')),
+    product: tp.product ? { id: tp.product.id, productName: tp.product.productName } : null
+  }));
+}
+
+async function reportProfitability() {
+  logger.info('SaleService.reportProfitability() invoked');
+  const items = await SaleItem.findAll({
+    include: [{
+      model: Product,
+      as: 'product',
+      include: [{ model: ProductCategory, as: 'category' }]
+    }],
+    where: { '$product.id$': { [Op.ne]: null } }
+  });
+
+  const byCategory = {};
+  for (const item of items) {
+    const catName = item.product?.category?.categoryName || 'Uncategorized';
+    if (!byCategory[catName]) {
+      byCategory[catName] = { categoryName: catName, revenue: 0, profit: 0, count: 0 };
+    }
+    const cost = Number(item.product?.costPrice || 0) * item.quantity;
+    const revenue = Number(item.totalPrice);
+    byCategory[catName].revenue += revenue;
+    byCategory[catName].profit += (revenue - cost);
+    byCategory[catName].count += item.quantity;
+  }
+  return Object.values(byCategory);
+}
+
+async function getLowStock() {
+  logger.info('SaleService.getLowStock() invoked');
+  const allProducts = await Product.findAll({
+    where: { isActive: true },
+    include: [{ model: ProductCategory, as: 'category', attributes: ['categoryName'] }],
+    order: [['stockQty', 'ASC']]
+  });
+  // Filter in JS to avoid sequelize.col() comparisons in WHERE (MySQL strict mode issue)
+  const lowStock = allProducts.filter(p => p.stockQty <= p.minStockLevel);
+  return lowStock.map(p => ({
+    id: p.id,
+    productName: p.productName,
+    stockQty: p.stockQty,
+    minStockLevel: p.minStockLevel,
+    unit: p.unit,
+    categoryName: p.category?.categoryName || 'Uncategorized',
+    category: p.category ? { categoryName: p.category.categoryName } : null
+  }));
 }
 
 module.exports = {
@@ -334,5 +416,8 @@ module.exports = {
   reportYearly,
   reportTrend,
   reportByCategory,
-  reportBySupplier
+  reportBySupplier,
+  reportTopProducts,
+  reportProfitability,
+  getLowStock
 };
