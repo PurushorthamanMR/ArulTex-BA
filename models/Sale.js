@@ -18,6 +18,11 @@ const Sale = sequelize.define('Sale', {
     allowNull: true,
     field: 'userId'
   },
+  customerId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    field: 'customerId'
+  },
   subtotal: {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: false,

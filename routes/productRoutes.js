@@ -25,6 +25,16 @@ router.post('/update', authenticateToken, authorize('ADMIN', 'MANAGER', 'STAFF')
   }
 });
 
+router.post('/updateBarcode', authenticateToken, authorize('ADMIN', 'MANAGER', 'STAFF'), async (req, res) => {
+  try {
+    const dto = await productService.updateBarcodeOnly(req.body);
+    res.json(responseUtil.getServiceResponse(dto));
+  } catch (error) {
+    logger.error('Error updating barcode:', error);
+    res.status(500).json(responseUtil.getErrorServiceResponse(error.message || 'Error updating barcode', 500));
+  }
+});
+
 router.get('/getAll', authenticateToken, async (req, res) => {
   try {
     const list = await productService.getAll();
@@ -88,6 +98,39 @@ router.get('/getByPrice', authenticateToken, async (req, res) => {
   } catch (error) {
     logger.error('Error getting products by price:', error);
     res.status(500).json(responseUtil.getErrorServiceResponse('Error retrieving products', 500));
+  }
+});
+
+router.get('/listForBarcode', authenticateToken, async (req, res) => {
+  try {
+    const list = await productService.listForBarcode();
+    res.json(responseUtil.getServiceResponse(list));
+  } catch (error) {
+    logger.error('Error getting products for barcode:', error);
+    res.status(500).json(responseUtil.getErrorServiceResponse('Error retrieving products for barcode labels', 500));
+  }
+});
+
+router.get('/getLowStock', authenticateToken, async (req, res) => {
+  try {
+    const activeOnly = req.query.activeOnly !== 'false';
+    const list = await productService.getLowStock(activeOnly);
+    res.json(responseUtil.getServiceResponse(list));
+  } catch (error) {
+    logger.error('Error getting low stock products:', error);
+    res.status(500).json(responseUtil.getErrorServiceResponse('Error retrieving low stock products', 500));
+  }
+});
+
+router.get('/getLowStockPaginated', authenticateToken, async (req, res) => {
+  try {
+    const pageNumber = parseInt(req.query.pageNumber) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 10;
+    const result = await productService.getLowStockPaginated(pageNumber, pageSize, req.query);
+    res.json(responseUtil.getServiceResponse(result));
+  } catch (error) {
+    logger.error('Error getting low stock products paginated:', error);
+    res.status(500).json(responseUtil.getErrorServiceResponse('Error retrieving low stock products', 500));
   }
 });
 

@@ -24,6 +24,7 @@ app.use('/userRole', require('./routes/userRoleRoutes'));
 app.use('/auth', require('./routes/passwordResetRoutes'));
 app.use('/userLogs', require('./routes/userLogsRoutes'));
 app.use('/productCategory', require('./routes/productCategoryRoutes'));
+app.use('/customer', require('./routes/customerRoutes'));
 app.use('/supplier', require('./routes/supplierRoutes'));
 app.use('/product', require('./routes/productRoutes'));
 app.use('/purchase', require('./routes/purchaseRoutes'));
@@ -55,7 +56,7 @@ app.use((req, res) => {
 
 // Initialize default user roles
 async function initializeDefaultUserRoles() {
-  const defaultRoles = ['Admin', 'Manager', 'Staff'];
+  const defaultRoles = ['Admin', 'Manager', 'Staff', 'Dummy Manager'];
   
   try {
     for (const roleName of defaultRoles) {

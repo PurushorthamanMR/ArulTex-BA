@@ -11,6 +11,7 @@ const PurchaseItem = require('./PurchaseItem');
 const Sale = require('./Sale');
 const SaleItem = require('./SaleItem');
 const InventoryTransaction = require('./InventoryTransaction');
+const Customer = require('./Customer');
 
 // User associations
 UserRole.hasMany(User, { foreignKey: 'userRoleId', as: 'users' });
@@ -37,6 +38,8 @@ Product.hasMany(PurchaseItem, { foreignKey: 'productId', as: 'purchaseItems' });
 // Sale
 User.hasMany(Sale, { foreignKey: 'userId', as: 'sales' });
 Sale.belongsTo(User, { foreignKey: 'userId', as: 'user' });
+Customer.hasMany(Sale, { foreignKey: 'customerId', as: 'sales' });
+Sale.belongsTo(Customer, { foreignKey: 'customerId', as: 'customer' });
 Sale.hasMany(SaleItem, { foreignKey: 'saleId', as: 'items' });
 SaleItem.belongsTo(Sale, { foreignKey: 'saleId', as: 'sale' });
 SaleItem.belongsTo(Product, { foreignKey: 'productId', as: 'product' });
@@ -61,5 +64,6 @@ module.exports = {
   PurchaseItem,
   Sale,
   SaleItem,
-  InventoryTransaction
+  InventoryTransaction,
+  Customer
 };

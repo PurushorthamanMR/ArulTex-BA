@@ -12,9 +12,10 @@ function computeSellingPrice(costPrice, discountPercentage = 0) {
 
 function toDto(row) {
   if (!row) return null;
+  const barCodeVal = row.barCode ?? row.barcode;
   const dto = {
     id: row.id,
-    barCode: row.barCode,
+    barCode: barCodeVal != null && String(barCodeVal).trim() !== '' ? String(barCodeVal).trim() : null,
     productName: row.productName,
     categoryId: row.categoryId,
     supplierId: row.supplierId,
@@ -42,13 +43,34 @@ const includeAssoc = [
   { model: Supplier, as: 'supplier', attributes: ['id', 'supplierName'], required: false }
 ];
 
+/**
+ * Barcode generation (backend only).
+ *
+ * Generating a barcode involves (1) a unique identification number for the product and
+ * (2) converting that number into a scannable image. For retail products sold in stores,
+ * this generally requires registration with GS1 (gs1.org) for a globally recognized
+ * code (GTIN / EAN-13 / UPC).
+ *
+ * This implementation produces an internal 13-digit number (prefix 8901000 + product id)
+ * for in-store POS and inventory. It is unique per product and suitable for local use.
+ * If you need globally recognized barcodes, register with GS1, obtain official GTINs,
+ * and store those in barCode (or a separate field). The app already converts any stored
+ * barcode number into a scannable image on the Barcode label page.
+ */
+function generateBarcode(productId) {
+  const id = Number(productId || 0);
+  const suffix = String(id).padStart(6, '0').slice(-6);
+  return `8901000${suffix}`;
+}
+
 async function save(body) {
   logger.info('ProductService.save() invoked');
   const costPrice = Number(body.costPrice);
   const discountPercentage = Number(body.discountPercentage) || 0;
   const sellingPrice = body.sellingPrice != null ? Number(body.sellingPrice) : computeSellingPrice(costPrice, discountPercentage);
+  const barCodeProvided = body.barCode != null && String(body.barCode).trim() !== '';
   const product = await Product.create({
-    barCode: body.barCode || null,
+    barCode: barCodeProvided ? String(body.barCode).trim() : null,
     productName: body.productName,
     categoryId: body.categoryId,
     supplierId: body.supplierId || null,
@@ -60,6 +82,14 @@ async function save(body) {
     unit: body.unit || 'pcs',
     isActive: body.isActive !== undefined ? body.isActive : true
   });
+  if (!barCodeProvided) {
+    const generated = generateBarcode(product.id);
+    const [affectedCount] = await Product.update(
+      { barCode: generated },
+      { where: { id: product.id } }
+    );
+    if (affectedCount === 0) logger.warn('ProductService.save: barcode update affected 0 rows for id=%s', product.id);
+  }
   const withAssoc = await Product.findByPk(product.id, { include: includeAssoc });
   return toDto(withAssoc);
 }
@@ -71,8 +101,12 @@ async function update(body) {
   const costPrice = body.costPrice != null ? Number(body.costPrice) : Number(product.costPrice);
   const discountPercentage = body.discountPercentage != null ? Number(body.discountPercentage) : Number(product.discountPercentage);
   const sellingPrice = body.sellingPrice != null ? Number(body.sellingPrice) : computeSellingPrice(costPrice, discountPercentage);
+  // Barcode: allow update only when explicitly provided (e.g. from Barcode Labels page); else keep existing or generate if missing
+  const barCodeProvided = body.barCode != null && String(body.barCode).trim() !== '';
+  const currentBarCode = product.barCode != null && String(product.barCode).trim() !== '' ? product.barCode : null;
+  const barCodeToSet = barCodeProvided ? String(body.barCode).trim() : (currentBarCode || generateBarcode(product.id));
   await product.update({
-    barCode: body.barCode !== undefined ? body.barCode : product.barCode,
+    barCode: barCodeToSet,
     productName: body.productName ?? product.productName,
     categoryId: body.categoryId ?? product.categoryId,
     supplierId: body.supplierId !== undefined ? body.supplierId : product.supplierId,
@@ -168,9 +202,72 @@ async function deleteById(id) {
   return { id };
 }
 
+/** Update only barcode for a product (e.g. from Barcode Labels page). No other fields are changed. */
+async function updateBarcodeOnly(body) {
+  const id = body.id != null ? Number(body.id) : null;
+  if (id == null || isNaN(id)) throw new Error('Product id is required');
+  const product = await Product.findByPk(id);
+  if (!product) throw new Error('Product not found');
+  const barCode = body.barCode != null && String(body.barCode).trim() !== '' ? String(body.barCode).trim() : null;
+  await product.update({ barCode });
+  const updated = await Product.findByPk(id, { attributes: ['id', 'productName', 'barCode'] });
+  return { id: updated.id, productName: updated.productName, barCode: updated.barCode != null ? String(updated.barCode).trim() : null };
+}
+
+/** List products with id, productName, barCode for barcode label page (active only). */
+async function listForBarcode() {
+  logger.info('ProductService.listForBarcode() invoked');
+  const rows = await Product.findAll({
+    where: { isActive: true },
+    attributes: ['id', 'productName', 'barCode'],
+    order: [['productName', 'ASC']]
+  });
+  return rows.map((r) => ({
+    id: r.id,
+    productName: r.productName,
+    barCode: r.barCode != null ? String(r.barCode).trim() : null
+  }));
+}
+
+/** Products where stockQty <= minStockLevel (for GET /product/getLowStock). */
+async function getLowStock(activeOnly = true) {
+  logger.info('ProductService.getLowStock() invoked');
+  const where = { isActive: activeOnly !== false };
+  const rows = await Product.findAll({
+    where,
+    include: [{ model: ProductCategory, as: 'category', attributes: ['id', 'categoryName'] }],
+    order: [['productName', 'ASC']]
+  });
+  const filtered = rows.filter((p) => (Number(p.stockQty) || 0) <= (Number(p.minStockLevel) || 0));
+  return filtered.map((r) => toDto(r));
+}
+
+/** Paginated low-stock products (for GET /product/getLowStockPaginated). */
+async function getLowStockPaginated(pageNumber = 1, pageSize = 10, filters = {}) {
+  logger.info('ProductService.getLowStockPaginated() invoked');
+  const where = { isActive: true };
+  const all = await Product.findAll({
+    where,
+    include: includeAssoc,
+    order: [['productName', 'ASC']]
+  });
+  const filtered = all.filter((p) => (Number(p.stockQty) || 0) <= (Number(p.minStockLevel) || 0));
+  const total = filtered.length;
+  const start = (pageNumber - 1) * pageSize;
+  const page = filtered.slice(start, start + pageSize);
+  return {
+    content: page.map(toDto),
+    totalElements: total,
+    totalPages: Math.ceil(total / pageSize) || 1,
+    pageNumber,
+    pageSize
+  };
+}
+
 module.exports = {
   save,
   update,
+  updateBarcodeOnly,
   getAll,
   getAllPaginated,
   getById,
@@ -178,5 +275,8 @@ module.exports = {
   getByCategory,
   getByPrice,
   deleteById,
+  listForBarcode,
+  getLowStock,
+  getLowStockPaginated,
   computeSellingPrice
 };
