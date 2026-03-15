@@ -105,7 +105,7 @@ async function initializeDefaultUser(userRoleId) {
       lastName: 'MR',
       emailAddress: 'mrprusothaman@gmail.com',
       password: hashedPassword,
-      mobileNumber: '+94765947337',
+      mobileNumber: '0765947337',
       address: 'Jaffna',
       isActive: true,
       userRoleId: userRoleId,
