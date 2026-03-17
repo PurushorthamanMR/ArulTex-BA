@@ -22,8 +22,6 @@ UserLogs.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 // Product category & product
 ProductCategory.hasMany(Product, { foreignKey: 'categoryId', as: 'products' });
 Product.belongsTo(ProductCategory, { foreignKey: 'categoryId', as: 'category' });
-Supplier.hasMany(Product, { foreignKey: 'supplierId', as: 'products' });
-Product.belongsTo(Supplier, { foreignKey: 'supplierId', as: 'supplier' });
 
 // Purchase
 Supplier.hasMany(Purchase, { foreignKey: 'supplierId', as: 'purchases' });

@@ -1,5 +1,5 @@
 const { Op } = require('sequelize');
-const { Product, ProductCategory, Supplier } = require('../models');
+const { Product, ProductCategory } = require('../models');
 const logger = require('../config/logger');
 
 /** Compute selling price from cost price and discount percentage: sellingPrice = costPrice * (1 - discountPercentage/100) */
@@ -18,7 +18,6 @@ function toDto(row) {
     barCode: barCodeVal != null && String(barCodeVal).trim() !== '' ? String(barCodeVal).trim() : null,
     productName: row.productName,
     categoryId: row.categoryId,
-    supplierId: row.supplierId,
     costPrice: row.costPrice != null ? Number(row.costPrice) : null,
     sellingPrice: row.sellingPrice != null ? Number(row.sellingPrice) : null,
     discountPercentage: row.discountPercentage != null ? Number(row.discountPercentage) : 0,
@@ -32,15 +31,11 @@ function toDto(row) {
   if (row.category) {
     dto.category = { id: row.category.id, categoryName: row.category.categoryName };
   }
-  if (row.supplier) {
-    dto.supplier = { id: row.supplier.id, supplierName: row.supplier.supplierName };
-  }
   return dto;
 }
 
 const includeAssoc = [
-  { model: ProductCategory, as: 'category', attributes: ['id', 'categoryName'] },
-  { model: Supplier, as: 'supplier', attributes: ['id', 'supplierName'], required: false }
+  { model: ProductCategory, as: 'category', attributes: ['id', 'categoryName'] }
 ];
 
 /**
@@ -67,7 +62,7 @@ async function save(body) {
   logger.info('ProductService.save() invoked');
   const costPrice = Number(body.costPrice);
   const discountPercentage = Number(body.discountPercentage) || 0;
-  const sellingPrice = body.sellingPrice != null ? Number(body.sellingPrice) : computeSellingPrice(costPrice, discountPercentage);
+  const sellingPrice = computeSellingPrice(costPrice, discountPercentage);
   const barCodeProvided = body.barCode != null && String(body.barCode).trim() !== '';
   const product = await Product.create({
     barCode: barCodeProvided ? String(body.barCode).trim() : null,
@@ -100,7 +95,7 @@ async function update(body) {
   if (!product) throw new Error('Product not found');
   const costPrice = body.costPrice != null ? Number(body.costPrice) : Number(product.costPrice);
   const discountPercentage = body.discountPercentage != null ? Number(body.discountPercentage) : Number(product.discountPercentage);
-  const sellingPrice = body.sellingPrice != null ? Number(body.sellingPrice) : computeSellingPrice(costPrice, discountPercentage);
+  const sellingPrice = computeSellingPrice(costPrice, discountPercentage);
   // Barcode: allow update only when explicitly provided (e.g. from Barcode Labels page); else keep existing or generate if missing
   const barCodeProvided = body.barCode != null && String(body.barCode).trim() !== '';
   const currentBarCode = product.barCode != null && String(product.barCode).trim() !== '' ? product.barCode : null;
@@ -137,7 +132,6 @@ async function getAllPaginated(pageNumber = 1, pageSize = 10, filters = {}) {
   if (filters.productName) where.productName = { [Op.like]: `%${filters.productName}%` };
   if (filters.barCode) where.barCode = { [Op.like]: `%${filters.barCode}%` };
   if (filters.categoryId) where.categoryId = filters.categoryId;
-  if (filters.supplierId) where.supplierId = filters.supplierId;
   const offset = (pageNumber - 1) * pageSize;
   const { count, rows } = await Product.findAndCountAll({
     where,
@@ -167,7 +161,6 @@ async function search(query) {
   if (query.productName) where.productName = { [Op.like]: `%${query.productName}%` };
   if (query.barCode) where.barCode = { [Op.like]: `%${query.barCode}%` };
   if (query.categoryId) where.categoryId = query.categoryId;
-  if (query.supplierId) where.supplierId = query.supplierId;
   if (query.isActive !== undefined && query.isActive !== '') {
     where.isActive = query.isActive === 'true' || query.isActive === true;
   }
