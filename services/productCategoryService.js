@@ -62,8 +62,9 @@ async function deleteById(id) {
   logger.info('ProductCategoryService.deleteById() invoked');
   const category = await ProductCategory.findByPk(id);
   if (!category) throw new Error('Category not found');
-  await category.destroy();
-  return { id };
+  // Soft delete: mark inactive instead of removing
+  await category.update({ isActive: false });
+  return { id, isActive: false };
 }
 
 module.exports = {

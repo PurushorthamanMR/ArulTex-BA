@@ -231,6 +231,17 @@ class UserService {
   }
 
   /**
+   * Soft delete (deactivate) user
+   */
+  async deleteUser(userId) {
+    logger.info('UserService.deleteUser() invoked');
+    const user = await User.findByPk(userId);
+    if (!user) throw new Error('User not found');
+    await user.update({ isActive: false });
+    return { id: userId, isActive: false };
+  }
+
+  /**
    * Update password
    */
   async updatePassword(userId, password, changedByUserId) {

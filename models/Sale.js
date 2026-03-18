@@ -38,6 +38,11 @@ const Sale = sequelize.define('Sale', {
     allowNull: false,
     field: 'paymentMethod'
   },
+  discountPercentage: {
+    type: DataTypes.DECIMAL(5, 2),
+    defaultValue: 0,
+    field: 'discountPercentage'
+  },
   saleDate: {
     type: DataTypes.DATE,
     defaultValue: DataTypes.NOW,

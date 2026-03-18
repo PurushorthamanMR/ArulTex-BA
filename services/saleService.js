@@ -13,6 +13,7 @@ function saleToDto(row, items = []) {
     customerId: row.customerId ?? null,
     subtotal: row.subtotal != null ? Number(row.subtotal) : null,
     totalAmount: row.totalAmount != null ? Number(row.totalAmount) : null,
+    discountPercentage: row.discountPercentage != null ? Number(row.discountPercentage) : 0,
     paymentMethod: row.paymentMethod,
     saleDate: row.saleDate,
     status: row.status
@@ -48,10 +49,9 @@ async function save(body) {
   const itemRows = items.map(it => {
     const qty = parseInt(it.quantity);
     const unitPrice = Number(it.unitPrice);
-    const discountAmount = Number(it.discountAmount) || 0;
-    const totalPrice = qty * unitPrice - discountAmount;
+    const totalPrice = qty * unitPrice;
     subtotal += totalPrice;
-    return { productId: it.productId, quantity: qty, unitPrice, discountAmount, totalPrice };
+    return { productId: it.productId, quantity: qty, unitPrice, totalPrice };
   });
   const totalAmount = subtotal;
   const sale = await Sale.create({
@@ -61,6 +61,7 @@ async function save(body) {
     subtotal,
     totalAmount,
     paymentMethod,
+    discountPercentage: Number(body.discountPercentage) || 0,
     saleDate: body.saleDate || new Date(),
     status: 'Completed'
   });
@@ -70,7 +71,6 @@ async function save(body) {
       productId: it.productId,
       quantity: it.quantity,
       unitPrice: it.unitPrice,
-      discountAmount: it.discountAmount,
       totalPrice: it.totalPrice
     });
     await recordInventoryChange({

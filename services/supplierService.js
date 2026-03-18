@@ -71,8 +71,9 @@ async function deleteById(id) {
   logger.info('SupplierService.deleteById() invoked');
   const supplier = await Supplier.findByPk(id);
   if (!supplier) throw new Error('Supplier not found');
-  await supplier.destroy();
-  return { id };
+  // Soft delete: mark inactive instead of removing the record
+  await supplier.update({ isActive: false });
+  return { id, isActive: false };
 }
 
 module.exports = {

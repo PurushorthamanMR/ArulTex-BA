@@ -77,8 +77,9 @@ async function deleteById(id) {
   logger.info('CustomerService.deleteById() invoked');
   const customer = await Customer.findByPk(id);
   if (!customer) throw new Error('Customer not found');
-  await customer.destroy();
-  return { id };
+  // Soft delete: mark inactive instead of removing
+  await customer.update({ isActive: false });
+  return { id, isActive: false };
 }
 
 module.exports = {

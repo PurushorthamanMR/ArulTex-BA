@@ -27,11 +27,6 @@ const SaleItem = sequelize.define('SaleItem', {
     allowNull: false,
     field: 'unitPrice'
   },
-  discountAmount: {
-    type: DataTypes.DECIMAL(10, 2),
-    defaultValue: 0,
-    field: 'discountAmount'
-  },
   totalPrice: {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: false,

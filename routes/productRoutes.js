@@ -134,6 +134,18 @@ router.get('/getLowStockPaginated', authenticateToken, async (req, res) => {
   }
 });
 
+router.get('/getHighStockPaginated', authenticateToken, async (req, res) => {
+  try {
+    const pageNumber = parseInt(req.query.pageNumber) || 1;
+    const pageSize = parseInt(req.query.pageSize) || 10;
+    const result = await productService.getHighStockPaginated(pageNumber, pageSize, req.query);
+    res.json(responseUtil.getServiceResponse(result));
+  } catch (error) {
+    logger.error('Error getting high stock products paginated:', error);
+    res.status(500).json(responseUtil.getErrorServiceResponse('Error retrieving high stock products', 500));
+  }
+});
+
 router.delete('/delete', authenticateToken, authorize('ADMIN', 'MANAGER', 'STAFF'), async (req, res) => {
   try {
     const id = parseInt(req.query.id);

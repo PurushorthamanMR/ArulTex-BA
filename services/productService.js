@@ -1,5 +1,5 @@
 const { Op } = require('sequelize');
-const { Product, ProductCategory } = require('../models');
+const { Product, ProductCategory, Supplier } = require('../models');
 const logger = require('../config/logger');
 
 /** Compute selling price from cost price and discount percentage: sellingPrice = costPrice * (1 - discountPercentage/100) */
@@ -18,6 +18,7 @@ function toDto(row) {
     barCode: barCodeVal != null && String(barCodeVal).trim() !== '' ? String(barCodeVal).trim() : null,
     productName: row.productName,
     categoryId: row.categoryId,
+    supplierId: row.supplierId,
     costPrice: row.costPrice != null ? Number(row.costPrice) : null,
     sellingPrice: row.sellingPrice != null ? Number(row.sellingPrice) : null,
     discountPercentage: row.discountPercentage != null ? Number(row.discountPercentage) : 0,
@@ -31,11 +32,18 @@ function toDto(row) {
   if (row.category) {
     dto.category = { id: row.category.id, categoryName: row.category.categoryName };
   }
+  if (row.supplier) {
+    dto.supplier = { id: row.supplier.id, supplierName: row.supplier.supplierName };
+  } else {
+    // When no supplier is set, expose a friendly default name
+    dto.supplier = { id: null, supplierName: 'NoSupplier' };
+  }
   return dto;
 }
 
 const includeAssoc = [
-  { model: ProductCategory, as: 'category', attributes: ['id', 'categoryName'] }
+  { model: ProductCategory, as: 'category', attributes: ['id', 'categoryName'] },
+  { model: Supplier, as: 'supplier', attributes: ['id', 'supplierName'], required: false }
 ];
 
 /**
@@ -132,6 +140,7 @@ async function getAllPaginated(pageNumber = 1, pageSize = 10, filters = {}) {
   if (filters.productName) where.productName = { [Op.like]: `%${filters.productName}%` };
   if (filters.barCode) where.barCode = { [Op.like]: `%${filters.barCode}%` };
   if (filters.categoryId) where.categoryId = filters.categoryId;
+  if (filters.supplierId) where.supplierId = filters.supplierId;
   const offset = (pageNumber - 1) * pageSize;
   const { count, rows } = await Product.findAndCountAll({
     where,
@@ -191,8 +200,9 @@ async function deleteById(id) {
   logger.info('ProductService.deleteById() invoked');
   const product = await Product.findByPk(id);
   if (!product) throw new Error('Product not found');
-  await product.destroy();
-  return { id };
+  // Soft delete: mark as inactive instead of removing the row
+  await product.update({ isActive: false });
+  return { id, isActive: false };
 }
 
 /** Update only barcode for a product (e.g. from Barcode Labels page). No other fields are changed. */
@@ -257,6 +267,29 @@ async function getLowStockPaginated(pageNumber = 1, pageSize = 10, filters = {})
   };
 }
 
+/** Paginated high/non-low stock products (for GET /product/getHighStockPaginated). */
+async function getHighStockPaginated(pageNumber = 1, pageSize = 10, filters = {}) {
+  logger.info('ProductService.getHighStockPaginated() invoked');
+  const where = { isActive: true };
+  const all = await Product.findAll({
+    where,
+    include: includeAssoc,
+    order: [['productName', 'ASC']]
+  });
+  // High/non-low stock: stockQty > minStockLevel
+  const filtered = all.filter((p) => (Number(p.stockQty) || 0) > (Number(p.minStockLevel) || 0));
+  const total = filtered.length;
+  const start = (pageNumber - 1) * pageSize;
+  const page = filtered.slice(start, start + pageSize);
+  return {
+    content: page.map(toDto),
+    totalElements: total,
+    totalPages: Math.ceil(total / pageSize) || 1,
+    pageNumber,
+    pageSize
+  };
+}
+
 module.exports = {
   save,
   update,
@@ -271,5 +304,6 @@ module.exports = {
   listForBarcode,
   getLowStock,
   getLowStockPaginated,
+  getHighStockPaginated,
   computeSellingPrice
 };
