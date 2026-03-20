@@ -1,5 +1,14 @@
 const { Op } = require('sequelize');
-const { Sale, SaleItem, Product, User, ProductCategory, Supplier, Customer } = require('../models');
+const { Sale, SaleItem, Product, User, ProductCategory, Supplier, Customer, Shift } = require('../models');
+const shiftService = require('./shiftService');
+
+function normalizePaymentMethod(raw) {
+  const lower = (raw || 'Cash').toString().toLowerCase();
+  if (lower === 'cash') return 'Cash';
+  if (lower === 'card') return 'Card';
+  if (lower === 'upi') return 'UPI';
+  return raw || 'Cash';
+}
 const { sequelize } = require('../config/database');
 const { recordInventoryChange } = require('./inventoryHelper');
 const logger = require('../config/logger');
@@ -18,6 +27,7 @@ function saleToDto(row, items = []) {
     saleDate: row.saleDate,
     status: row.status
   };
+  if (row.shiftId != null) dto.shiftId = row.shiftId;
   if (row.user) dto.user = { id: row.user.id, firstName: row.user.firstName, lastName: row.user.lastName };
   if (row.customer) dto.customer = { id: row.customer.id, customerName: row.customer.customerName, phone: row.customer.phone, email: row.customer.email };
   if (items.length) dto.items = items.map(saleItemToDto);
@@ -44,6 +54,10 @@ async function save(body) {
   logger.info('SaleService.save() invoked');
   const { userId, paymentMethod, items } = body;
   if (!items || !items.length) throw new Error('Sale must have at least one item');
+  const openShiftRow = await shiftService.getOpenShift();
+  if (!openShiftRow) {
+    throw new Error('No open shift. Open a shift on POS before recording a sale.');
+  }
   const invoiceNo = body.invoiceNo || `INV-${Date.now()}`;
   let subtotal = 0;
   const itemRows = items.map(it => {
@@ -60,10 +74,11 @@ async function save(body) {
     customerId: body.customerId != null ? body.customerId : null,
     subtotal,
     totalAmount,
-    paymentMethod,
+    paymentMethod: normalizePaymentMethod(paymentMethod),
     discountPercentage: Number(body.discountPercentage) || 0,
     saleDate: body.saleDate || new Date(),
-    status: 'Completed'
+    status: 'Completed',
+    shiftId: openShiftRow.id
   });
   for (const it of itemRows) {
     await SaleItem.create({
@@ -385,6 +400,207 @@ async function reportLowStock() {
   }));
 }
 
+function getDateRangeBounds(fromDate, toDate) {
+  const now = new Date();
+  const start = fromDate ? new Date(fromDate) : new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const endBase = toDate ? new Date(toDate) : new Date(start);
+  const end = new Date(endBase.getFullYear(), endBase.getMonth(), endBase.getDate() + 1);
+  return { start, end };
+}
+
+function emptyXReportNoOpenShift() {
+  const t = new Date().toISOString().slice(0, 10);
+  return {
+    fromDate: t,
+    toDate: t,
+    transactionCount: 0,
+    totalSales: 0,
+    totalCashSale: 0,
+    totalCardSale: 0,
+    avgTransactionValue: 0,
+    payments: [],
+    categories: [],
+    reportScope: 'shift',
+    noOpenShift: true
+  };
+}
+
+function emptyZReportNoOpenShift() {
+  const t = new Date().toISOString().slice(0, 10);
+  return {
+    fromDate: t,
+    toDate: t,
+    transactionCount: 0,
+    grandTotal: 0,
+    totalCashSale: 0,
+    totalCardSale: 0,
+    dailyTotals: [],
+    reportScope: 'shift',
+    noOpenShift: true
+  };
+}
+
+/** X report: shiftId = current register session; otherwise date range. Completed sales only (excludes refunds). */
+async function reportX(userId, fromDate, toDate, shiftId) {
+  const where = { status: 'Completed' };
+  let fromDateOut;
+  let toDateOut;
+  const meta = { reportScope: shiftId ? 'shift' : 'dateRange' };
+
+  if (shiftId) {
+    const sid = Number(shiftId);
+    const shift = await Shift.findByPk(sid);
+    if (!shift) throw new Error('Shift not found');
+    where.shiftId = sid;
+    if (userId) where.userId = Number(userId);
+    fromDateOut = new Date(shift.openedAt).toISOString().slice(0, 10);
+    toDateOut = new Date().toISOString().slice(0, 10);
+    Object.assign(meta, { shiftId: sid, shiftOpenedAt: shift.openedAt });
+  } else {
+    const { start, end } = getDateRangeBounds(fromDate, toDate);
+    where.saleDate = { [Op.gte]: start, [Op.lt]: end };
+    if (userId) where.userId = Number(userId);
+    fromDateOut = start.toISOString().slice(0, 10);
+    toDateOut = new Date(end.getTime() - 1).toISOString().slice(0, 10);
+  }
+
+  const sales = await Sale.findAll({
+    where,
+    include: [
+      {
+        model: SaleItem,
+        as: 'items',
+        include: [{ model: Product, as: 'product', include: [{ model: ProductCategory, as: 'category' }] }]
+      }
+    ],
+    order: [['saleDate', 'ASC']]
+  });
+
+  const paymentTotals = {};
+  const categoryTotals = {};
+  let totalAmount = 0;
+  let transactionCount = 0;
+  let totalCashSale = 0;
+  let totalCardSale = 0;
+
+  for (const sale of sales) {
+    const amount = Number(sale.totalAmount) || 0;
+    totalAmount += amount;
+    transactionCount += 1;
+
+    const method = (sale.paymentMethod || '').toString();
+    if (method === 'Cash') totalCashSale += amount;
+    else if (method === 'Card') totalCardSale += amount;
+
+    const paymentKey = sale.paymentMethod || 'Unknown';
+    if (!paymentTotals[paymentKey]) paymentTotals[paymentKey] = { paymentMethod: paymentKey, count: 0, amount: 0 };
+    paymentTotals[paymentKey].count += 1;
+    paymentTotals[paymentKey].amount += amount;
+
+    for (const item of sale.items || []) {
+      const categoryName = item.product?.category?.categoryName || 'Uncategorized';
+      if (!categoryTotals[categoryName]) categoryTotals[categoryName] = { categoryName, quantity: 0, amount: 0 };
+      categoryTotals[categoryName].quantity += Number(item.quantity) || 0;
+      categoryTotals[categoryName].amount += Number(item.totalPrice) || 0;
+    }
+  }
+
+  return {
+    fromDate: fromDateOut,
+    toDate: toDateOut,
+    ...meta,
+    transactionCount,
+    totalSales: Math.round(totalAmount * 100) / 100,
+    totalCashSale: Math.round(totalCashSale * 100) / 100,
+    totalCardSale: Math.round(totalCardSale * 100) / 100,
+    avgTransactionValue: transactionCount ? Math.round((totalAmount / transactionCount) * 100) / 100 : 0,
+    payments: Object.values(paymentTotals).map((p) => ({
+      ...p,
+      amount: Math.round(p.amount * 100) / 100
+    })),
+    categories: Object.values(categoryTotals)
+      .map((c) => ({ ...c, amount: Math.round(c.amount * 100) / 100 }))
+      .sort((a, b) => b.amount - a.amount)
+  };
+}
+
+/** Z report: shiftId = register session; otherwise date range. Completed only. */
+async function reportZ(userId, fromDate, toDate, shiftId) {
+  const where = { status: 'Completed' };
+  let fromDateOut;
+  let toDateOut;
+  const meta = { reportScope: shiftId ? 'shift' : 'dateRange' };
+
+  if (shiftId) {
+    const sid = Number(shiftId);
+    const shift = await Shift.findByPk(sid);
+    if (!shift) throw new Error('Shift not found');
+    where.shiftId = sid;
+    if (userId) where.userId = Number(userId);
+    fromDateOut = new Date(shift.openedAt).toISOString().slice(0, 10);
+    toDateOut = new Date().toISOString().slice(0, 10);
+    Object.assign(meta, { shiftId: sid, shiftOpenedAt: shift.openedAt });
+  } else {
+    const { start, end } = getDateRangeBounds(fromDate, toDate);
+    where.saleDate = { [Op.gte]: start, [Op.lt]: end };
+    if (userId) where.userId = Number(userId);
+    fromDateOut = start.toISOString().slice(0, 10);
+    toDateOut = new Date(end.getTime() - 1).toISOString().slice(0, 10);
+  }
+
+  const sales = await Sale.findAll({
+    where,
+    attributes: ['saleDate', 'totalAmount', 'paymentMethod'],
+    order: [['saleDate', 'ASC']]
+  });
+
+  const byDate = {};
+  let grandTotal = 0;
+  let transactionCount = 0;
+  let totalCashSale = 0;
+  let totalCardSale = 0;
+
+  for (const sale of sales) {
+    const dateKey = new Date(sale.saleDate).toISOString().slice(0, 10);
+    const amount = Number(sale.totalAmount) || 0;
+    const method = (sale.paymentMethod || '').toString();
+    if (method === 'Cash') totalCashSale += amount;
+    else if (method === 'Card') totalCardSale += amount;
+
+    if (!byDate[dateKey]) {
+      byDate[dateKey] = {
+        date: dateKey,
+        transactionCount: 0,
+        totalSales: 0,
+        cashSales: 0,
+        cardSales: 0
+      };
+    }
+    byDate[dateKey].transactionCount += 1;
+    byDate[dateKey].totalSales += amount;
+    if (method === 'Cash') byDate[dateKey].cashSales += amount;
+    else if (method === 'Card') byDate[dateKey].cardSales += amount;
+    grandTotal += amount;
+    transactionCount += 1;
+  }
+
+  return {
+    fromDate: fromDateOut,
+    toDate: toDateOut,
+    ...meta,
+    transactionCount,
+    grandTotal: Math.round(grandTotal * 100) / 100,
+    totalCashSale: Math.round(totalCashSale * 100) / 100,
+    totalCardSale: Math.round(totalCardSale * 100) / 100,
+    dailyTotals: Object.values(byDate).map((d) => ({
+      ...d,
+      totalSales: Math.round(d.totalSales * 100) / 100,
+      cashSales: Math.round(d.cashSales * 100) / 100,
+      cardSales: Math.round(d.cardSales * 100) / 100
+    }))
+  };
+}
+
 module.exports = {
   save,
   update,
@@ -400,5 +616,9 @@ module.exports = {
   reportTrends,
   reportTopProducts,
   reportProfitability,
-  reportLowStock
+  reportLowStock,
+  reportX,
+  reportZ,
+  emptyXReportNoOpenShift,
+  emptyZReportNoOpenShift
 };

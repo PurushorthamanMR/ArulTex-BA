@@ -52,6 +52,11 @@ const Sale = sequelize.define('Sale', {
     type: DataTypes.ENUM('Completed', 'Refunded', 'Pending'),
     defaultValue: 'Completed',
     field: 'status'
+  },
+  shiftId: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    field: 'shiftId'
   }
 }, {
   tableName: 'sales',

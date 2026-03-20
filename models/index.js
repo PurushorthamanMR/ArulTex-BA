@@ -12,6 +12,8 @@ const Sale = require('./Sale');
 const SaleItem = require('./SaleItem');
 const InventoryTransaction = require('./InventoryTransaction');
 const Customer = require('./Customer');
+const ZReport = require('./ZReport');
+const Shift = require('./Shift');
 
 // User associations
 UserRole.hasMany(User, { foreignKey: 'userRoleId', as: 'users' });
@@ -51,6 +53,17 @@ InventoryTransaction.belongsTo(Product, { foreignKey: 'productId', as: 'product'
 User.hasMany(InventoryTransaction, { foreignKey: 'userId', as: 'inventoryTransactions' });
 InventoryTransaction.belongsTo(User, { foreignKey: 'userId', as: 'user' });
 
+User.hasMany(ZReport, { foreignKey: 'closedByUserId', as: 'zReportsClosed' });
+ZReport.belongsTo(User, { foreignKey: 'closedByUserId', as: 'closer' });
+
+User.hasMany(Shift, { foreignKey: 'openedByUserId', as: 'openedShifts' });
+Shift.belongsTo(User, { foreignKey: 'openedByUserId', as: 'opener' });
+User.hasMany(Shift, { foreignKey: 'closedByUserId', as: 'closedShifts' });
+Shift.belongsTo(User, { foreignKey: 'closedByUserId', as: 'closer' });
+Shift.hasMany(Sale, { foreignKey: 'shiftId', as: 'sales' });
+Sale.belongsTo(Shift, { foreignKey: 'shiftId', as: 'shift' });
+ZReport.belongsTo(Shift, { foreignKey: 'shiftId', as: 'shift' });
+
 module.exports = {
   sequelize,
   UserRole,
@@ -65,5 +78,7 @@ module.exports = {
   Sale,
   SaleItem,
   InventoryTransaction,
-  Customer
+  Customer,
+  ZReport,
+  Shift
 };

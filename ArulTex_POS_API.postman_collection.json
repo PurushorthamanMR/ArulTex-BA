@@ -314,7 +314,7 @@
 						"header": [{ "key": "Content-Type", "value": "application/json" }],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"barCode\": \"8901234567890\",\n  \"productName\": \"Widget A\",\n  \"categoryId\": 1,\n  \"supplierId\": 1,\n  \"costPrice\": 100.00,\n  \"discountPercentage\": 10,\n  \"stockQty\": 0,\n  \"minStockLevel\": 5,\n  \"unit\": \"pcs\",\n  \"isActive\": true\n}"
+							"raw": "{\n  \"barCode\": \"8901234567890\",\n  \"productName\": \"Widget A\",\n  \"categoryId\": 1,\n  \"supplierId\": 1,\n  \"costPrice\": 100.00,\n  \"discountPercentage\": 10,\n  \"stockQty\": 0,\n  \"minStockLevel\": 5,\n  \"isActive\": true\n}"
 						},
 						"url": { "raw": "{{base_url}}/product/save", "host": ["{{base_url}}"], "path": ["product", "save"] }
 					}
@@ -326,7 +326,7 @@
 						"header": [{ "key": "Content-Type", "value": "application/json" }],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n  \"id\": 1,\n  \"productName\": \"Widget A Updated\",\n  \"categoryId\": 1,\n  \"supplierId\": 1,\n  \"costPrice\": 100.00,\n  \"discountPercentage\": 15,\n  \"stockQty\": 50,\n  \"minStockLevel\": 5,\n  \"unit\": \"pcs\",\n  \"isActive\": true\n}"
+							"raw": "{\n  \"id\": 1,\n  \"productName\": \"Widget A Updated\",\n  \"categoryId\": 1,\n  \"supplierId\": 1,\n  \"costPrice\": 100.00,\n  \"discountPercentage\": 15,\n  \"stockQty\": 50,\n  \"minStockLevel\": 5,\n  \"isActive\": true\n}"
 						},
 						"url": { "raw": "{{base_url}}/product/update", "host": ["{{base_url}}"], "path": ["product", "update"] }
 					}

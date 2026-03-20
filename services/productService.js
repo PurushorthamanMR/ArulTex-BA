@@ -24,7 +24,6 @@ function toDto(row) {
     discountPercentage: row.discountPercentage != null ? Number(row.discountPercentage) : 0,
     stockQty: row.stockQty,
     minStockLevel: row.minStockLevel,
-    unit: row.unit || 'pcs',
     isActive: row.isActive,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt
@@ -82,7 +81,6 @@ async function save(body) {
     discountPercentage,
     stockQty: body.stockQty ?? 0,
     minStockLevel: body.minStockLevel ?? 0,
-    unit: body.unit || 'pcs',
     isActive: body.isActive !== undefined ? body.isActive : true
   });
   if (!barCodeProvided) {
@@ -118,7 +116,6 @@ async function update(body) {
     discountPercentage,
     stockQty: body.stockQty !== undefined ? body.stockQty : product.stockQty,
     minStockLevel: body.minStockLevel !== undefined ? body.minStockLevel : product.minStockLevel,
-    unit: body.unit ?? product.unit,
     isActive: body.isActive !== undefined ? body.isActive : product.isActive
   });
   const withAssoc = await Product.findByPk(product.id, { include: includeAssoc });

@@ -6,6 +6,8 @@
 
 const AMOUNT_KEYS = [
   'totalSales',
+  'totalCashSale',
+  'totalCardSale',
   'totalPurchases',
   'todaySales',
   'monthSales',
@@ -16,7 +18,9 @@ const AMOUNT_KEYS = [
   'discountAmount',
   'totalRevenue',
   'revenue',
-  'profit'
+  'profit',
+  'cashSales',
+  'cardSales'
 ];
 
 /**

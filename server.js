@@ -29,6 +29,7 @@ app.use('/supplier', require('./routes/supplierRoutes'));
 app.use('/product', require('./routes/productRoutes'));
 app.use('/purchase', require('./routes/purchaseRoutes'));
 app.use('/sales', require('./routes/saleRoutes'));
+app.use('/shift', require('./routes/shiftRoutes'));
 app.use('/inventory', require('./routes/inventoryRoutes'));
 app.use('/dashboard', require('./routes/dashboardRoutes'));
 app.use('/reports', require('./routes/reportRoutes'));

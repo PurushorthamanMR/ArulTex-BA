@@ -53,11 +53,6 @@ const Product = sequelize.define('Product', {
     defaultValue: 0,
     field: 'minStockLevel'
   },
-  unit: {
-    type: DataTypes.STRING(20),
-    defaultValue: 'pcs',
-    field: 'unit'
-  },
   isActive: {
     type: DataTypes.BOOLEAN,
     defaultValue: true,
