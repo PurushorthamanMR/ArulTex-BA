@@ -1,7 +1,10 @@
-const { Op } = require('sequelize');
 const { Purchase, PurchaseItem, Product, Supplier, User } = require('../models');
 const { recordInventoryChange } = require('./inventoryHelper');
+const { resolveDefaultSupplierId, mapSupplierNameForDisplay } = require('./defaultSupplierHelper');
 const logger = require('../config/logger');
+
+const resolvePurchaseSupplierId = resolveDefaultSupplierId;
+const mapSupplierForDto = mapSupplierNameForDisplay;
 
 function purchaseToDto(row, items = []) {
   if (!row) return null;
@@ -15,7 +18,7 @@ function purchaseToDto(row, items = []) {
     status: row.status,
     createdAt: row.createdAt
   };
-  if (row.supplier) dto.supplier = { id: row.supplier.id, supplierName: row.supplier.supplierName };
+  if (row.supplier) dto.supplier = mapSupplierForDto(row.supplier);
   if (row.user) dto.user = { id: row.user.id, firstName: row.user.firstName, lastName: row.user.lastName };
   if (items.length) dto.items = items.map(itemToDto);
   else if (row.items) dto.items = row.items.map(itemToDto);
@@ -48,9 +51,10 @@ async function save(body) {
     totalAmount += totalPrice;
     return { productId: it.productId, quantity: qty, costPrice, totalPrice };
   });
+  const resolvedSupplierId = await resolvePurchaseSupplierId(supplierId);
   const purchase = await Purchase.create({
     purchaseNo,
-    supplierId,
+    supplierId: resolvedSupplierId,
     totalAmount,
     purchaseDate: body.purchaseDate || new Date(),
     userId: userId || body.userId,
@@ -119,14 +123,18 @@ async function update(body) {
         });
       }
     }
+    const nextSupplierId =
+      body.supplierId !== undefined ? await resolvePurchaseSupplierId(body.supplierId) : purchase.supplierId;
     await purchase.update({
-      supplierId: body.supplierId ?? purchase.supplierId,
+      supplierId: nextSupplierId,
       totalAmount,
       status: newStatus
     });
   } else {
+    const nextSupplierId =
+      body.supplierId !== undefined ? await resolvePurchaseSupplierId(body.supplierId) : purchase.supplierId;
     await purchase.update({
-      supplierId: body.supplierId ?? purchase.supplierId,
+      supplierId: nextSupplierId,
       status: newStatus
     });
   }

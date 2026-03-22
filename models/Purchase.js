@@ -15,7 +15,7 @@ const Purchase = sequelize.define('Purchase', {
   },
   supplierId: {
     type: DataTypes.INTEGER,
-    allowNull: false,
+    allowNull: true,
     field: 'supplierId'
   },
   totalAmount: {
