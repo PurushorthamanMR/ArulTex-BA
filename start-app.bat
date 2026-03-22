@@ -1,4 +1,5 @@
 @echo off
+REM Icon: .bat files cannot use a custom icon. Run create-start-shortcut.vbs once, then use "Start ArulTex POS.lnk".
 cd /d "%~dp0"
 set "APP_URL=http://localhost:5173"
 echo ArulTex POS - starting backend and frontend...
