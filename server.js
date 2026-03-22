@@ -7,7 +7,7 @@ const logger = require('./config/logger');
 const bcrypt = require('bcryptjs');
 const { Op } = require('sequelize');
 // Load all models and associations
-const { UserRole, User } = require('./models');
+const { UserRole, User, Supplier } = require('./models');
 
 const app = express();
 const PORT = process.env.PORT || 8080;
@@ -82,6 +82,36 @@ async function initializeDefaultUserRoles() {
   }
 }
 
+// Placeholder supplier for purchases without a real supplier (matches frontend default supplierId = 1 on fresh DBs)
+async function initializeDefaultSupplier() {
+  try {
+    const [supplier, created] = await Supplier.findOrCreate({
+      where: { supplierName: 'Nosupplier' },
+      defaults: {
+        supplierName: 'Nosupplier',
+        phone: '0000000000',
+        email: 'nosupplier@gmail.com',
+        address: 'nosupplier',
+        isActive: true
+      }
+    });
+    if (created) {
+      logger.info(`Created default supplier: Nosupplier (id ${supplier.id})`);
+    } else {
+      await supplier.update({
+        phone: '0000000000',
+        email: 'nosupplier@gmail.com',
+        address: 'nosupplier',
+        isActive: true
+      });
+      logger.debug(`Default supplier 'Nosupplier' already exists (id ${supplier.id}).`);
+    }
+  } catch (error) {
+    logger.error('Error initializing default supplier:', error);
+    throw error;
+  }
+}
+
 // Initialize default user (ID, firstName, lastName, emailAddress, password, mobileNumber, address, isActive, userRoleId, createdDate - no branchId)
 async function initializeDefaultUser(userRoleId) {
   try {
@@ -129,6 +159,7 @@ async function initializeDefaultData() {
       throw new Error('Admin role not found. Cannot create default user.');
     }
     await initializeDefaultUser(adminRole.id);
+    await initializeDefaultSupplier();
     logger.info('All default data initialization completed.');
   } catch (error) {
     logger.error('Error initializing default data:', error);

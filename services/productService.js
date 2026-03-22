@@ -1,5 +1,6 @@
 const { Op } = require('sequelize');
 const { Product, ProductCategory, Supplier } = require('../models');
+const { resolveDefaultSupplierId, mapSupplierNameForDisplay } = require('./defaultSupplierHelper');
 const logger = require('../config/logger');
 
 /** Compute selling price from cost price and discount percentage: sellingPrice = costPrice * (1 - discountPercentage/100) */
@@ -9,6 +10,7 @@ function computeSellingPrice(costPrice, discountPercentage = 0) {
   const selling = cost * (1 - discount / 100);
   return Math.round(selling * 100) / 100;
 }
+
 
 function toDto(row) {
   if (!row) return null;
@@ -32,10 +34,9 @@ function toDto(row) {
     dto.category = { id: row.category.id, categoryName: row.category.categoryName };
   }
   if (row.supplier) {
-    dto.supplier = { id: row.supplier.id, supplierName: row.supplier.supplierName };
+    dto.supplier = mapSupplierNameForDisplay(row.supplier);
   } else {
-    // When no supplier is set, expose a friendly default name
-    dto.supplier = { id: null, supplierName: 'NoSupplier' };
+    dto.supplier = { id: row.supplierId ?? null, supplierName: 'No supplier' };
   }
   return dto;
 }
@@ -71,11 +72,12 @@ async function save(body) {
   const discountPercentage = Number(body.discountPercentage) || 0;
   const sellingPrice = computeSellingPrice(costPrice, discountPercentage);
   const barCodeProvided = body.barCode != null && String(body.barCode).trim() !== '';
+  const resolvedSupplierId = await resolveDefaultSupplierId(body.supplierId);
   const product = await Product.create({
     barCode: barCodeProvided ? String(body.barCode).trim() : null,
     productName: body.productName,
     categoryId: body.categoryId,
-    supplierId: body.supplierId || null,
+    supplierId: resolvedSupplierId,
     costPrice,
     sellingPrice,
     discountPercentage,
@@ -106,11 +108,13 @@ async function update(body) {
   const barCodeProvided = body.barCode != null && String(body.barCode).trim() !== '';
   const currentBarCode = product.barCode != null && String(product.barCode).trim() !== '' ? product.barCode : null;
   const barCodeToSet = barCodeProvided ? String(body.barCode).trim() : (currentBarCode || generateBarcode(product.id));
+  const nextSupplierId =
+    body.supplierId !== undefined ? await resolveDefaultSupplierId(body.supplierId) : product.supplierId;
   await product.update({
     barCode: barCodeToSet,
     productName: body.productName ?? product.productName,
     categoryId: body.categoryId ?? product.categoryId,
-    supplierId: body.supplierId !== undefined ? body.supplierId : product.supplierId,
+    supplierId: nextSupplierId,
     costPrice,
     sellingPrice,
     discountPercentage,
