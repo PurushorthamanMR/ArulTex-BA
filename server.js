@@ -33,6 +33,7 @@ app.use('/shift', require('./routes/shiftRoutes'));
 app.use('/inventory', require('./routes/inventoryRoutes'));
 app.use('/dashboard', require('./routes/dashboardRoutes'));
 app.use('/reports', require('./routes/reportRoutes'));
+app.use('/printer', require('./routes/printerRoutes'));
 
 // Error handling middleware
 app.use((err, req, res, next) => {
